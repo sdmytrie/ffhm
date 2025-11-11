@@ -1,0 +1,17 @@
+<fieldset>
+    <form id="myForm">
+    {% if current_season == '' %}
+        {{ season.name }}
+    {% else %}
+        {% for current_season in season_list %}
+            <input type="radio"
+                   id="season_{{ current_season.id }}"
+                   name="currentSeason"
+                   value="{{ season_url_value }}{{ current_season.id }}"
+                   {% if season.id == current_season.id %}checked="checked"
+                   {%endif%}>
+            <label for="season_{{ current_season.id }}">{{ current_season.name }}</label>
+        {% endfor %}
+    {% endif %}
+    </form>
+</fieldset>

@@ -1,0 +1,359 @@
+{% extends "scoresheet/base.html" %}
+{% load i18n static %}
+
+{% block extra_css %}
+<link rel="stylesheet" type="text/css" href="{% static 'scoresheet/css/modules/season.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'scoresheet/css/modules/competition.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'scoresheet/css/modules/listing.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 listing-box">
+        <div class="season">
+            {% include "scoresheet/season/_season_select.html" with current_season=season.id season_url_value=season_url_value %}
+            {{ scoresheet.check_season }}
+        </div>
+        <table class="table table-condensed table-sm table-striped table-hover listing-datatable">
+            <tr>
+                <td colspan="2">
+                    <form action="{% url 'scoresheet:listing' %}" method="post">
+                        {% include "./_listing_form.html" with form=form %}
+                    </form>
+                </td>
+                <td>&nbsp;</td>
+                <td rowspan="4" style="width: 25rem;">
+                    <div style="overflow: auto; height: 15rem;">
+                        {% for c_date in date_list %}
+                            {% ifchanged c_date|date:'M Y' %}
+                                <br><strong>{{ c_date|date:'M Y' }}</strong><br>
+                            {% endifchanged %}
+                            <label class="checkbox-inline px-2">
+                                <input type="checkbox" 
+                                    name="c_date[]"
+                                    id="c_date"
+                                    class="c_date"
+                                    value="{{ c_date|date:'D d M Y' }}" 
+                                    checked="checked"> {{ c_date|date:'D d M Y' }}
+                            </label>
+                        {% endfor %}
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Genre:
+                </td>
+                <td>
+                    <label class="radio-inline px-2">
+                        <input type="radio" name="gender" value="2" checked="checked"> Masculin
+                    </label>
+                    <label class="radio-inline px-2">
+                        <input type="radio" name="gender" value="3"> F&eacute;minin
+                    </label>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    S&eacute;ries:
+                </td>
+                <td>
+                    {% for serie in series %}
+                        <label class="checkbox-inline px-2">
+                            <input type="checkbox" name="serie" value="{{ serie }}"> {{ serie }}
+                        </label>
+                    {% endfor %}
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Ages:
+                </td>
+                <td>
+                    {% for age in ages %}
+                        <label class="checkbox-inline px-2">
+                            <input type="checkbox" name="age" value="{{ age }}"> {{ age }}
+                        </label>
+                    {% endfor %}
+                </td>
+            </tr>
+        </table>
+        <br>
+
+        <table id="competitionSet" class="table table-condensed table-sm table-striped table-hover competition-datatable">
+            <thead class="thead-dark">
+                <tr>
+                    <th style="display: none;">&nbsp;</th>
+                    <th>Nom</th>
+                    <th>Ligue</th>
+                    <th>Master oui/non</th>
+                    <th>Minime oui/non</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if not competitions %}
+                <tr>
+                    <td style="width: 500px;">Aucune comp&eacute;tition</td>
+                </tr>
+                {% endif %}
+                {% for competition in competitions %}
+                <tr>
+                    <td style="display: none;">
+                        {{ competition.id }}
+                    </td>
+                    <td class="text-nowrap">
+                        {{ competition.name }}
+                    </td>
+                    <td nowrap>
+                        {{ competition.user.profile.region }}
+                    </td>
+                    <td class="text-nowrap">
+                        {% if competition.ismasters %}
+                        Masters
+                        {% else %}
+                        &nbsp;
+                        {% endif %}
+                    </td>
+                    <td class="text-nowrap">
+                        {% if competition.isminime %}
+                        Minime
+                        {% else %}
+                        &nbsp;
+                        {% endif %}
+                    </td>
+                    <td  data-order="{{ competition.start_date|date:'Ymd' }}"class="text-nowrap">
+                        {{ competition.start_date|date:'D d M Y' }}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascript %}
+    {{ block.super }}
+
+    <link rel="stylesheet" type="text/css" href="{% static 'scoresheet/css/select.dataTables.min.css' %}">
+    <script type="text/javascript" src="{% static 'scoresheet/js/dataTables.select.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'scoresheet/js/dataTables.buttons.min.js' %}"></script>
+
+    <script type="text/javascript">
+        $("input:radio[name=currentSeason]").change(function() {
+            value = $("input:radio[name=currentSeason]:checked").val();
+            location.href = value;
+        });
+        function validateGender()
+        {
+            var genderList = Array();
+            var allGender = document.getElementsByName("gender");
+            
+            for(var i = 0; i < allGender.length; i++) {  
+                if(allGender[i].checked) {
+                    genderList.push(allGender[i].value);
+                }
+
+            } 
+            return genderList.join('|'); 
+        }
+        function validateSerie()
+        {
+            var serieList = Array();
+            var allSerie = document.getElementsByName("serie");
+            
+            for(var i = 0; i < allSerie.length; i++) {  
+                if(allSerie[i].checked) {
+                    serieList.push(allSerie[i].value);
+                }
+
+            } 
+            return serieList.join('|'); 
+        }
+        function validateAge()
+        {
+            var ageList = Array();
+            var allAge = document.getElementsByName("age");
+            
+            for(var i = 0; i < allAge.length; i++) {  
+                if(allAge[i].checked) {
+                    ageList.push(allAge[i].value);
+                }
+
+            } 
+            return ageList.join('|'); 
+        }
+
+        var defaultStartDate = "{{ season.start_date | date:'d/m/Y' }}";
+        $("#startDate").datepicker({
+            dateFormat: "dd/mm/yy",
+            defaultDate: defaultStartDate
+        });
+
+        $("#endDate").datepicker({
+            dateFormat: "dd/mm/yy",
+        });
+
+        // $('#competitionSet thead th').each(function () {
+        //     var title = $(this).text();
+        //     $(this).html('<input type="text" class="form-control competition-datatable__form-fixer" placeholder="' + title + '" />');
+        // });
+        
+        var table = $('#competitionSet').DataTable({
+            dom: "Blprti",
+            buttons: {
+                buttons: [
+                    {
+                        text: 'Select all',
+                        action: function () {
+                            table.rows({ search: 'applied' }).select();
+                        }
+                    },
+                    {
+                        text: 'Select none',
+                        action: function () {
+                            table.rows().deselect();
+                        }
+                    },
+                    {
+                        text: 'Afficher le listing',
+                        action: function (e, dt, node, config) {
+                            var count = table.rows( { selected: true } ).count();
+                            if (count === 0) {
+                                alert("Veuillez sélectionner une compétition.");
+                            } else {
+                                var competitionSet = Array();
+                                var genderList = validateGender();
+                                var serieList = validateSerie();
+                                var ageList = validateAge();
+                                for(i=0; i<count; i++){
+                                    competitionSet.push(table.rows( { selected: true } ).data()[i][0]);
+                                }
+                                // myRows.forEach(element => {
+                                //     competitionSet.push(element[0]);
+                                // });
+                                var form = $(document.createElement('form'));
+                                $(form).attr("action", "/scoresheet/listing/view");
+                                $(form).attr("method", "POST");
+                                $(form).css("display", "none");
+                                $(form).append('{% csrf_token %}')
+                                var input_test = $("<input>")
+                                .attr("type", "text")
+                                .attr("name", "competitionSet")
+                                .val(competitionSet);
+                                $(form).append($(input_test));
+
+                                var input_gender = $("<input>")
+                                .attr("type", "text")
+                                .attr("name", "genderList")
+                                .val(genderList);
+                                $(form).append($(input_gender));
+                                
+                                var input_serie = $("<input>")
+                                .attr("type", "text")
+                                .attr("name", "serieList")
+                                .val(serieList);
+                                $(form).append($(input_serie));
+                                
+                                var input_age = $("<input>")
+                                .attr("type", "text")
+                                .attr("name", "ageList")
+                                .val(ageList);
+                                $(form).append($(input_age));
+                                form.appendTo( document.body );
+                                $(form).submit();
+                            }
+                        },
+                    }
+                ],
+                dom:{
+                        button:{
+                            tag: "button",
+                            className: "btn btn-primary btn-sm mr-2"
+                        },
+                        buttonLiner: {
+                            tag: null
+                        }
+                    },
+            },
+            select: {
+                style: 'multi',
+            },
+            // ordering: false,
+            aLengthMenu: [[20, 40, 60, -1], [20, 40, 60, "All"]],
+            iDisplayLength: 20,
+            order: [[5, 'desc']],
+            language: {
+                paginate: {
+                    previous: "&lt;",
+                    next: "&gt;"
+                }
+            }
+        });
+
+        thClone = $('#competitionSet thead tr').clone().appendTo('#competitionSet thead')
+        $('#competitionSet thead tr:eq(1) th').each(function(i) {
+            if(i == 0){
+              $(this).html('<div class="input-group input-group-sm mb-1"><input id="col-input-' + i + '" type="text" class="form-control ps-1 pe-1" /></div>')
+            } else {
+              $(this).html('<div class="input-group input-group-sm mb-1"><input id="col-input-' + i + '" type="text" class="form-control ps-1 pe-1" /></div>')
+            }
+
+              $('input', this).on('keyup change', function() {
+                  if (table.column(i).search() !== this.value) {
+                      table
+                          .column(i)
+                          .search(this.value, true, false)
+                          .draw()
+                  }
+              })
+        })
+        thClone.find('th').attr('data-dt-order', 'disable')
+        thClone.find('th').attr('class', '')
+
+        // Apply the search
+        table.columns().every(function () {
+            var that = this;
+
+            $('input', this.header()).on('keyup change clear', function () {
+                if (that.search() !== this.value) {
+                    that
+                        .search(this.value)
+                        .draw();
+                }
+            });
+        });
+        //$.fn.DataTable.ext.pager.numbers_length = 5;	
+        //table.columns.adjust().draw();
+
+        // $.fn.dataTable.ext.search.push(
+        //     function( settings, data, dataIndex ) {
+        //         s_date = []
+        //         $('.c_date:checked').each(function () {
+        //             s_date.push($(this).val());
+        //             // arr[i++] = $(this).val();
+        //         });
+        //         var date = data[5];
+        //         if(s_date.includes(date)){
+        //             return true;
+        //         }
+        //         return false;
+        // });
+
+        // $('.c_date').click(function() {
+        //     table.draw();
+        //     // if($(this).is(':checked')) {
+        //     //     $('#mixte').show();
+        //     //     $('#single').prop('checked', false);
+        //     //     $('#id_ismasters').prop('checked', false);
+        //     //     $('#ismasters_tr').hide();
+        //     // } else {
+        //     //     $('#id_gender_0').prop('checked', false);
+        //     //     $('#mixte').hide();
+        //     // }
+        // });
+
+        // table.draw();
+    </script>
+{% endblock %}

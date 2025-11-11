@@ -1,0 +1,85 @@
+{% load i18n static %}
+
+<div class="modal fade" id="modal_{{ modal }}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">{{ leadertype }}</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          
+
+
+            
+            <input type="hidden" 
+                   id="isteam-{{ leadertype.id }}" 
+                   name="isteam-{{ leadertype.id }}" 
+                   value="{{ competition.isteam }}" />
+            <div class="row">
+                <div class="col-md-12">
+                    <h5>{{ concurrent.firstname }}&nbsp;{{ concurrent.lastname }}</h5>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                        {% if leader %}
+                            <h5>{{ concurrent.licence }}</h5>
+                        {% endif %}
+                </div>
+            </div>
+                {% if perms.scoresheet.add_event %}
+                <div class="row">
+                    <div class="col-md-6">
+                            <input type="hidden" 
+                                   id="currentCompetiton-{{ leadertype.id }}" 
+                                   value="{{ competition.id }}"/>
+                            <input type="hidden" 
+                                   id="leadertypename-{{ leadertype.id }}" 
+                                   value="{{ leadertype.id }}"/>
+                            {% if concurrent %}
+                                Remplacer :
+                            {% else %}
+                                Ajouter :
+                            {% endif %}
+                            <input type="text" id="leaderGet-{{ leadertype.id }}" autocomplete="off"/>
+                            <div id="leaderGetResultList-{{ leadertype.id }}" style="display:none; overflow:visible;">
+                                <select id="leaderSelect-{{ leadertype.id }}" size="5">
+                                    <option> --- </option>
+                                </select>
+                            </div>
+                    </div>
+                    <div class="col-md-3">
+                        <br>
+                        {% if leader %}
+                            <a href="{% url 'scoresheet:leader_delete' leader.id %}" role="button" class="btn btn-danger btn-sm active">Supprimer</a>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-3">
+                            <div id="leader_loader-{{ leadertype.id }}" 
+                                 name="leader_loader-{{ leadertype.id }}" 
+                                 style="display: none;">
+                                <img src="{% static 'scoresheet/img/ajax-loader.gif' %}" 
+                                     style="width: 32px; position: absolute;"/>
+                            </div>
+                    </div>
+                {% endif%}
+    
+            </div>
+
+
+
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+    </div>
+  </div>

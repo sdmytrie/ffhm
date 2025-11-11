@@ -1,0 +1,90 @@
+{% load i18n static %}
+
+{% if event.competition.closed is True %}
+    <tr class="{% cycle 'row1' 'row2' %}"
+        {% if not onlyteam %}
+            {% ifchanged event.weightcategory %}
+                {% if event.duplicate %}
+                    style="border-top: 2px solid black; background-color: lightgrey;"
+                {% else %}
+                    style="border-top: 2px solid black;"
+                {% endif %}
+            {% endifchanged %}
+        {% endif %}
+        {% if event.duplicate %}
+            style="background-color: lightgrey;"
+        {% endif %}>
+        <td>
+            {{ event.concurrent.licence }}
+        </td>
+        <td>
+            <a href="{% url 'scoresheet:search' event.concurrent.id %}">
+                {{ event.concurrent.lastname.upper }}&nbsp;{{ event.concurrent.firstname.capitalize }}
+            </a>
+        </td>
+        <td>
+            {{ event.competition.start_date | date:"d-m-Y" }}
+        </td>
+        <td class="event-datatable__col-md">
+            {{ event.concurrent.date_of_birth|date:"Y" }}
+        </td>
+        <td>
+            {{ event.league }}
+        </td>
+        <td class="event-datatable__col-md">
+            {{ event.clubName }}<br />
+        </td>
+        <td class="event-datatable__col-md">
+            {{ event.concurrent.country }}
+        </td>
+        <td>
+            {{ event.weight }}
+        </td>
+
+        {% for attempt in event.getARRAttemptSet %}
+            <td class="event-datatable__col-md" style="text-align: center;">
+                <div class="attempt_{{ attempt.validate }}">
+                    <strong>{%if attempt.validate == 2%}-{%endif%}{{ attempt.value }}</strong>
+                </div>
+            </td>
+        {% endfor %}
+        <td style="text-align: center;">
+            <strong>{{ event.totalSet.0 }}</strong>
+        </td>
+        {% for attempt in event.getEPJAttemptSet %}
+            <td class="event-datatable__col-md" style="text-align: center;">
+                <div class="attempt_{{ attempt.validate }}">
+                    <strong>{%if attempt.validate == 2%}-{%endif%}{{ attempt.value }}</strong>
+                </div>
+            </td>
+        {% endfor %}
+
+        <td style="text-align: center;">
+            <strong>{{ event.totalSet.1 }}</strong>
+        </td>
+        <td style="width: 50px; text-align:center;">
+            <strong>{{ event.total }}</strong>
+        </td>
+        <td class="event-datatable__col-sm" style="text-align: center;">
+            {% if event.minimumweightcategory.name and not competition.isminime %}
+                {{ event.minimumweightcategory.name }}
+            {% else %}
+                N.C.
+            {% endif %}
+        </td>
+        <td class="event-datatable__col-sm" nowrap style="text-align: center;">
+            {% if event.competition.ismasters %}
+                {{ event.agecategory.name | slice:"3" }} {{ event.categorie }}&nbsp;{{ event.weightcategory.weight }}
+            {% else %}
+                {% if 'W' in event.agecategory.name or 'M' in event.agecategory.name %}
+                    {{ event.agecategory.name | slice:"3" }} {{ event.categorie }}&nbsp;{{ event.weightcategory.weight }}
+                {% else %}
+                    {{ event.agecategory.name | slice:"3" }} {{ event.categorie }}&nbsp;{{ event.weightcategory.weight }}
+                {% endif %}
+            {% endif %}
+        </td>
+        <td class="event-datatable__col-md" style="text-align: center;">
+            {{ event.iwf|floatformat:2 }}
+        </td>
+    </tr>
+{% endif %}

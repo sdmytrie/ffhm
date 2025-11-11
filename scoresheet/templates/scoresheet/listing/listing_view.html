@@ -1,0 +1,78 @@
+{% extends "scoresheet/base.html" %}
+{% load i18n static %}
+
+{% block extra_css %}
+<link rel="stylesheet" type="text/css" href="{% static 'scoresheet/css/modules/event.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'scoresheet/css/modules/listing.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="row">
+    <div id="listing" class="col-md-12 listing-box">
+        <div class="row">
+            <div class="col-md-1">
+                <a href="javascript:" id="printButton" role="button" class="btn btn-success btn-sm active">Print</a>
+            </div>
+        </div>
+        {% for gender, agecategory_set in event_set.items %}
+            <h2>{{ gender.verbosename | upper }}</h2>
+            {% for agecategory_name, weightcategory_set in agecategory_set.items %}
+                <h3>{{ agecategory_name }} - 
+                    {% for name, nb in statistics.items %}
+                        {% if name == agecategory_name %}
+                            {{ nb }} athlètes
+                        {% endif %}
+                    {% endfor %}
+                </h3>
+                <table id="mycompetitions" class="table table-condensed table-sm table-bordered table-hover index__datatable event-datatable">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>Licence</th>
+                            <th>Nom</th>
+                            <th>Date</th>
+                            <th class="event-datatable__col-md">AN</th>
+                            <th>Ligue</th>
+                            <th class="event-datatable__col-md">Club</th>
+                            <th class="event-datatable__col-md">NAT</th>
+                            <th>P.C.</th>
+                            <th class="event-datatable__col-md" style="text-align: center;">1</th>
+                            <th class="event-datatable__col-md" style="text-align: center;">2</th>
+                            <th class="event-datatable__col-md" style="text-align: center;">3</th>
+                            <th style="text-align: center;">ARR</th>
+                            <th class="event-datatable__col-md" style="text-align: center;">1</th>
+                            <th class="event-datatable__col-md" style="text-align: center;">2</th>
+                            <th class="event-datatable__col-md" style="text-align: center;">3</th>
+                            <th style="text-align: center;">EPJ</th>
+                            <th style="text-align: center;">TOTAL</th>
+                            <th class="event-datatable__col-sm" style="text-align: center;">S&eacute;rie</th>
+                            <th class="event-datatable__col-sm" style="text-align: center;">Cat&eacute;gorie</th>
+                            <th class="event-datatable__col-md" style="text-align: center;">IWF</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for weightcategory, concurrent_set in weightcategory_set.items %}
+                            {% for concurrent, event in concurrent_set.items %}
+                                {% if concurrent.clubName in clubs or clubs == "all" %}
+                                  {% include "../event/_event_listing_datatable.html" with event=event %}
+                                {% endif %}
+                            {% endfor %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <br />
+            {% endfor %}
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block javascript %}
+    {{ block.super }}
+
+    <script type="text/javascript">
+        $('#printButton').on('click', function(){
+            $('#listing').printThis();
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,151 @@
+{% extends "scoresheet/base.html" %}
+{% load i18n static %}
+
+{% block extra_css %}
+<link rel="stylesheet" type="text/css" href="{% static 'scoresheet/css/modules/event.css' %}">
+{% endblock %}
+
+{% block content %}
+<div id="allCompetitions">
+    <div class="row">
+        <div class="col-md-12 event-header">
+            <div class="event-header__item" style="white-space: normal">
+                {% include "../competition/_competition_title.html" with competition=competition %}
+                <input type="hidden" id="currentCompetiton" value="{{ competition.id }}"/>
+                <input type="hidden" id="gender_id" value="{{ competition.gender.id }}"/>
+            </div>
+            {% if not user_agent == "mobile" %}
+                <div class="event-header__item d-print-none">
+                    {% if perms.scoresheet.change_competition and all_done is True or user.is_superuser %}
+                        <a href="{% url 'scoresheet:competition_open' competition.id %}" 
+                            class="btn">Ouvrir</a>
+                    {% endif %}
+                    <a href="javascript:" id="printButton" class="btn">Print</a>
+                </div>
+                <div class="event-header__item">
+                    <table class="table table-condensed table-sm table-bordered table-hover event-leader-datatable">
+                        <tbody>
+                            <tr>
+                                {% for key, value in leader_dict.items %}
+                                    <th style="text-align: left;">
+                                        {% if key.name == "null" %}
+                                            &nbsp;
+                                        {% else %}
+                                            {{ key.name }}
+                                        {% endif %}
+                                    </th>
+                                    <td style="border-right: solid 1 blue;">
+                                        {{ value.concurrent.firstname }}&nbsp;{{ value.concurrent.lastname }}<br>
+                                        <p style="font-size:10px">{{ value.concurrent.clubName }}</p>
+                                    </td>
+                                    {% if key.view_order == 3 or key.view_order == 6 or key.view_order == 9 or key.view_order == 12 %}
+                                        </tr><tr>
+                                    {% endif %}
+                                {% endfor %}
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12 event-box">
+            {% if competition.visibility or competition.user.profile.region == request.user.profile.region or request.user.is_superuser %}
+                <table id="competitionSet" class="table table-condensed table-sm table-hover event-datatable">
+                    <thead class="thead-dark">
+                        <tr>
+                            {% if not user_agent == "mobile" %}
+                                <th>Licence</th>
+                            {% endif %}
+                            <th>Nom</th>
+                            <th class="event-datatable__col-md">AN</th>
+                            <th class="event-datatable__col-md">Club</th>
+                            <th class="event-datatable__col-md">NAT</th>
+                            <th>P.C.</th>
+                            <th class="event-datatable__col-md" style="text-align: center;">1</th>
+                            <th class="event-datatable__col-md" style="text-align: center;">2</th>
+                            <th class="event-datatable__col-md" style="text-align: center;">3</th>
+                            <th style="text-align: center;">ARR</th>
+                            <th class="event-datatable__col-md" style="text-align: center;">1</th>
+                            <th class="event-datatable__col-md" style="text-align: center;">2</th>
+                            <th class="event-datatable__col-md" style="text-align: center;">3</th>
+                            <th style="text-align: center;">EPJ</th>
+                            <th style="text-align: center;">TOTAL</th>
+                            <th class="event-datatable__col-sm" style="text-align: center;">S&eacute;rie</th>
+                            <th class="event-datatable__col-sm" style="text-align: center;">Cat&eacute;gorie</th>
+                            <th class="event-datatable__col-md" style="text-align: center;">IWF</th>
+                            <th class="event-datatable__col-md" style="text-align: center;">&nbsp;</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for team in team_list %}
+                            <tr>
+                                <td style="background: #79aec8;" colspan="13">
+                                    <div>
+                                        <font size="+1"><strong>{{ team.name }}</strong></font>
+                                        {% if user_agent == "mobile" or user_agent == "tablet" %}
+                                            &nbsp;<font size="+1">IWF : &nbsp;<strong>{{ team.iwf|floatformat:2 }}</strong></font>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                                <td class="event-datatable__col-md" style="background: #79aec8; text-align: right;" colspan="4">
+                                    <font size="+1">IWF : &nbsp;<strong>{{ team.iwf|floatformat:2 }}</strong></font>
+                                </td>
+                                <td class="event-datatable__col-md" style="background: #79aec8; text-align: right;" colspan="2">
+                            </tr>
+                            <tr>
+                                {% for event in team.event_sorted_list %}
+                                    {% include "../event/_event_closed_datatable.html" with event=event onlyteam=True %}
+                                {% endfor %}
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascript %}
+    {{ block.super }}
+
+    <script type="text/javascript">
+        $('#printButton').on('click', function(){
+            $('#allCompetitions').printThis();
+        });
+    </script>
+
+    <script>
+    //    var table = $('#competitionSet').DataTable({
+    //        dom: 'Bplrti',
+    //        order: [[4, 'desc']],
+    //        ordering: true,
+    //        aLengthMenu: [[10, 20, 40, -1], [10, 20, 40, "All"]],
+    //        iDisplayLength: 10,
+    //        language: {
+    //            paginate: {
+    //                previous: "&lt;",
+    //                next: "&gt;"
+    //            }
+    //        }
+    //    });
+
+    //    thClone = $('#competitionSet thead tr').clone().appendTo('#competitionSet thead')
+    //    $('#competitionSet thead tr:eq(1) th').each(function(i) {
+    //          $(this).html('<div class="input-group input-group-sm mb-1"><input id="col-input-' + i + '" type="text" class="form-control ps-1 pe-1" /></div>')
+
+    //          $('input', this).on('keyup change', function() {
+    //              if (table.column(i).search() !== this.value) {
+    //                  table
+    //                      .column(i)
+    //                      .search(this.value, true, false)
+    //                      .draw()
+    //              }
+    //          })
+    //    })
+    //    thClone.find('th').attr('data-dt-order', 'disable')
+    //    thClone.find('th').attr('class', '')
+    </script>
+{% endblock %}

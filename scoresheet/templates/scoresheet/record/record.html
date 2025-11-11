@@ -1,0 +1,108 @@
+{% extends "scoresheet/base.html" %}
+{% load i18n static %}
+
+{% block title %}FFHM - Records de France{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" type="text/css" href="{% static 'scoresheet/css/modules/season.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'scoresheet/css/modules/event.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'scoresheet/css/modules/competition.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-md-12 competition-box">
+    <div class="main-menu">
+        <h3 class="main-menu__item">Les records de France</u></h3>
+    </div>
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-12 competition-box">
+    {% for key, values in records.items %}
+      <table id="competitionSet" class="table table-condensed table-sm table-striped table-hover">
+        <thead class="thead-dark">
+          <th colspan="2">{{ key }}</th>
+        </thead>
+        <tbody>
+          {% for gender, records in values.items %}
+          <td style="width: 50%;">
+            <span style="background-color: white;">{{ gender }}</span>
+            <br>
+            <table id="competitionSet" class="table table-condensed table-sm table-striped table-hover" 
+              style="font-size: 0.8rem; background-color: white;">
+              <thead>
+                <th style="width: 1%">Catégorie de poids</th>
+                <th>Arraché</th>
+                <th>Ep/jeté</th>
+                <th>total</th>
+              </thead>
+              <tbody>
+                {% for record in records %}
+                  <tr>
+                    <td>{{ record.weight }}</td>
+                    <td>
+                      <table style="width: 100%">
+                        <tr>
+                          <td style="width: 90%">
+                            {% if record.arr.is_standard %}
+                              {{ record.arr.concurrent }}
+                            {% else %}
+                              <a href="{% url 'scoresheet:search' record.arr.concurrent.id %}">
+                                  {{ record.arr.concurrent.lastname.upper }}&nbsp;{{ record.arr.concurrent.firstname.capitalize }}
+                              </a>
+                            {% endif %}
+                          </td>
+                          <td>
+                            {{ record.arr.value }}
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                    <td>
+                      <table style="width: 100%">
+                        <tr>
+                          <td style="width: 90%">
+                            {% if record.ep_j.is_standard %}
+                              {{ record.ep_j.concurrent }}
+                            {% else %}
+                              <a href="{% url 'scoresheet:search' record.ep_j.concurrent.id %}">
+                                  {{ record.ep_j.concurrent.lastname.upper }}&nbsp;{{ record.ep_j.concurrent.firstname.capitalize }}
+                              </a>
+                            {% endif %}
+                          </td>
+                          <td>
+                            {{ record.ep_j.value }}
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                    <td>
+                      <table style="width: 100%">
+                        <tr>
+                          <td style="width: 90%">
+                            {% if record.total.is_standard %}
+                              {{ record.total.concurrent }}
+                            {% else %}
+                              <a href="{% url 'scoresheet:search' record.total.concurrent.id %}">
+                                  {{ record.total.concurrent.lastname.upper }}&nbsp;{{ record.total.concurrent.firstname.capitalize }}
+                              </a>
+                            {% endif %}
+                          </td>
+                          <td>
+                            {{ record.total.value }}
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </td>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% endfor %}
+  </div>
+</div>
+{% endblock content %}

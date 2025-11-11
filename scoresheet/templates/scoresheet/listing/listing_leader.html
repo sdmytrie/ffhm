@@ -1,0 +1,105 @@
+{% extends "scoresheet/base.html" %}
+{% load i18n static %}
+
+{% block extra_css %}
+<link rel="stylesheet" type="text/css" href="{% static 'scoresheet/css/modules/season.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'scoresheet/css/modules/leader.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="row">
+    <div class="col-md-12 leader-box">
+        <div class="season">
+            {% if request.user.is_superuser %}
+                {% include "scoresheet/season/_season_select.html" with current_season=season.id season_url_value=season_url_value %}
+            {% else %}
+                <strong>{{ season.name }}</strong>
+            {% endif %}
+            {{ scoresheet.check_season }}
+        </div>
+        <div class="main-menu">
+            <h3>Liste des officiels</h3>
+        </div>
+        <table id="leaders" class="table table-condensed table-sm table-bordered table-hover leader-datatable">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Nom</th>
+                    <th class="leader-datatable__col-sm">Rôle</th>
+                    <th class="leader-datatable__col-md">Competition</th>
+                    <th class="leader-datatable__col-md">Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for leader in leaders %}
+                    <tr>
+                        <td>
+                            {% ifchanged leader.concurrent %}
+                                <strong>{{ leader.concurrent.firstname }}&nbsp;{{ leader.concurrent.lastname }}</strong>
+                            {% else %}
+                                <span class="text-light">{{ leader.concurrent.firstname }}&nbsp;{{ leader.concurrent.lastname }}</span>
+                            {% endifchanged %}
+                        </td>
+                        <td class="leader-datatable__col-sm">
+                            {{ leader.leadertype.name }}
+                        </td>
+                        <td class="leader-datatable__col-md">
+                            <a href="{% url 'scoresheet:competition_view' competition_id=leader.competition.id %}">
+                                {{ leader.competition.name }}
+                            </a>
+                        </td>
+                        <td class="leader-datatable__col-md">
+                            {{ leader.competition.start_date | date:"D d M Y" }}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascript %}
+    {{ block.super }}
+
+    <script type="text/javascript">
+        $("input:radio[name=currentSeason]").change(function() {
+            value = $("input:radio[name=currentSeason]:checked").val();
+            location.href = value;
+        });
+    </script>
+
+    <script type="text/javascript">
+        var table = $('#leaders').DataTable({
+            dom: 'Bplrti',
+            ordering: false,
+            aLengthMenu: [[20, 30, 40, -1], [10, 20, 40, "All"]],
+            iDisplayLength: 20,
+            language: {
+                paginate: {
+                    previous: "&lt;",
+                    next: "&gt;"
+                }
+            }
+        });
+        $('#leaders thead th').each(function () {
+            var title = $(this).text();
+            $(this).html('<input type="text" class="form-control leader-datatable__form-fixer" placeholder="' + title + '" />');
+        });
+        // Apply the search
+        table.columns().every(function () {
+            var that = this;
+
+            $('input', this.header()).on('keyup change clear', function () {
+                if (that.search() !== this.value) {
+                    that
+                        .search(this.value)
+                        .draw();
+                }
+            });
+        });
+        $.fn.DataTable.ext.pager.numbers_length = 5;
+        table.columns.adjust().draw();
+    </script>
+
+{% endblock %}

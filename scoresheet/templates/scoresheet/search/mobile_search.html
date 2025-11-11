@@ -1,0 +1,324 @@
+{% extends "scoresheet/base.html" %}
+{% load i18n static %}
+
+{% block extra_css %}
+<link rel="stylesheet" type="text/css" href="{% static 'scoresheet/css/modules/season.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'scoresheet/css/modules/competition.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'scoresheet/css/modules/event.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'scoresheet/css/modules/search.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="col-md-12 competition-box">
+  <div class="season">
+      {% include "scoresheet/season/_season_select.html" with current_season=season.id season_url_value=season_url_value %}
+      {{ scoresheet.check_season }}
+  </div>
+  <div class="main-menu">
+      <h3 class="main-menu__item">Recherche</h3>
+  </div>
+  <form action="{% url 'scoresheet:search' %}" method="POST">
+      {% csrf_token %}
+      <div class="form-row search-box pb-2">
+          <div class="col">
+              <label for="concurrentGet">
+                  <strong>Athlète</strong>
+              </label>
+              <input type="text" name="concurrentGet" id="concurrentGet" class="form-control" autocomplete="off">
+              <div id="concurrentGetResultList" style="display: none; overflow:visible;">
+                  <select id="concurrentSelect" size="5" class="form-control">
+                      <option> --- </option>
+                  </select>
+              </div>
+          </div>
+          {% if user_agent == "tablet" %}
+              <div class="col">
+                  <label for="clubGet">
+                      <strong>Club</strong>
+                  </label>
+                  <input type="text" name="clubGet" id="clubGet" class="form-control" autocomplete="off">
+                  <div id="clubGetResultList" style="display: none; overflow:visible;">
+                      <select id="clubSelect" size="5" class="form-control">
+                          <option> --- </option>
+                      </select>
+                  </div>
+              </div>
+              <div class="col">
+                 <label for="leagueGet">
+                     <strong>Ligue</strong>
+                 </label>
+                 <input type="text" name="leagueGet" id="leagueGet" class="form-control" autocomplete="off">
+                 <div id="leagueGetResultList" style="display: none; overflow:visible;">
+                     <select id="leagueSelect" size="5" class="form-control">
+                         <option> --- </option>
+                     </select>
+                 </div>
+              </div>
+          {% endif %}
+      </div>
+  </form>
+</div>
+{% if concurrent or club or league %}
+<div class="row">
+    <div class="col-md-12 event-box">
+        <span style="color: white">
+            {% if concurrent %}
+                <h3>{{ concurrent.firstname }}&nbsp;{{ concurrent.lastname }}</h3>
+                {{ concurrent.date_of_birth|date:"d/m/Y" }}
+            {% endif %}
+            {% if club %}
+                <h3>{{ club }}</h3>
+            {% endif %}
+            {% if league %}
+                <h3>{{ league }}</h3>
+            {% endif %}
+        </span>
+        <br>
+        <table id="competitionSet" class="table table-condensed table-sm table-bordered table-hover event-datatable">
+            <thead class="thead-dark">
+                <tr>
+                    {% if user_agent == "tablet" %}
+                        <th class="event-datatable__col-sm">Licence</th>
+                    {% endif %}
+                    <th>Nom</th>
+                    <th>Competition</th>
+                    {% if user_agent == "tablet" %}
+                        <th>P.C.</th>
+                    {% endif %}
+                    {% if user_agent == "tablet" %}
+                        <th style="text-align: center;">ARR</th>
+                        <th style="text-align: center;">EP-J</th>
+                    {% endif %}
+                    <th style="text-align: center;">TOTAL</th>
+                    {% if user_agent == "tablet" %}
+                        <th style="text-align: center;">S&eacute;rie</th>
+                    {% endif %}
+                    {% if user_agent == "tablet" %}
+                        <th style="text-align: center;">Cat&eacute;gorie</th>
+                    {% endif %}
+                </tr>
+            </thead>
+            {% for event in event_list %}
+                {% include "../event/_mobile_event_searched_datatable.html" with event=event has_begin=True has_ended=True %}
+            {% endfor %}
+        </table>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block javascript %}
+    {{ block.super }}
+
+    <script>
+        $("input:radio[name=currentSeason]").change(function() {
+            value = $("input:radio[name=currentSeason]:checked").val();
+            location.href = value;
+        });
+        var table = $('#competitionSet').DataTable({
+            dom: 'Bplrti',
+            order: [[1, 'asc']],
+            aLengthMenu: [[10, 20, 40, -1], [10, 20, 40, "All"]],
+            iDisplayLength: 10,
+            language: {
+                paginate: {
+                    previous: "&lt;",
+                    next: "&gt;"
+                }
+            }
+        });
+
+        thClone = $('#competitionSet thead tr').clone().appendTo('#competitionSet thead')
+        $('#competitionSet thead tr:eq(1) th').each(function(i) {
+              $(this).html('<div class="input-group mb-1"><input id="col-input-' + i + '" type="text" class="form-control ps-1 pe-1" /></div>')
+              $('input', this).on('keyup change', function() {
+                  if (table.column(i).search() !== this.value) {
+                      table
+                          .column(i)
+                          .search(this.value, true, false)
+                          .draw()
+                  }
+              })
+        })
+        thClone.find('th').attr('data-dt-order', 'disable')
+        thClone.find('th').attr('class', '')
+
+        var globalTimeout = null;
+        $("#concurrentGet").on("keyup", function(event) {
+            event.preventDefault();
+            if (globalTimeout != null) {
+                clearTimeout(globalTimeout);
+            }
+        
+            if (event.which == 27) {
+                $("#concurrentGetResultList").hide();
+                $("#concurrentGet").val('')
+            }
+
+            globalTimeout = setTimeout(function() {
+                globalTimeout = null;
+                var request = $.ajax({
+                    url: "/scoresheet/concurrent/search",
+                    type: "post",
+                    data: 'motif=' + $("#concurrentGet").val()
+                });
+
+                request.done(function(msg) {
+                    if ($("#concurrentGet").val().length > 0) {
+                        $("#concurrentGetResultList").show();
+                    } else {
+                        $("#concurrentGetResultList").hide();
+                        $("#concurrentSelect")
+                            .children()
+                            .remove();
+                    }
+
+                    $("#concurrentSelect")
+                        .children()
+                        .remove();
+                    $(msg)
+                        .find("object")
+                        .each(function() {
+                            var concurrent = "";
+                            $(this)
+                                .find("field")
+                                .each(function() {
+                                    concurrent += " " + $(this).text();
+                                });
+                        $("#concurrentSelect").append(
+                            new Option(concurrent, $(this).attr("pk"))
+                        );
+                        var id = $(this).attr("pk");
+                    });
+                });
+
+                request.fail(function(jqXHR, textStatus) {
+                    alert("Request failed: " + textStatus);
+                });
+            }, 400);
+        });
+
+         $("#clubGet").on("keyup", function(event) {
+            event.preventDefault();
+            if (globalTimeout != null) {
+                clearTimeout(globalTimeout);
+            }
+        
+            if (event.which == 27) {
+                $("#clubGetResultList").hide();
+                $("#clubGet").val('')
+            }
+
+            globalTimeout = setTimeout(function() {
+                globalTimeout = null;
+                var request = $.ajax({
+                    url: "/scoresheet/club/search",
+                    type: "post",
+                    data: 'motif=' + $("#clubGet").val()
+                });
+
+                request.done(function(msg) {
+                    if ($("#clubGet").val().length > 0) {
+                        $("#clubGetResultList").show();
+                    } else {
+                        $("#clubGetResultList").hide();
+                        $("#clubSelect")
+                            .children()
+                            .remove();
+                    }
+
+                    $("#clubSelect")
+                        .children()
+                        .remove();
+                    $(msg)
+                        .find("object")
+                        .each(function() {
+                            var concurrent = "";
+                            $(this)
+                                .find("field")
+                                .each(function() {
+                                    concurrent += " " + $(this).text();
+                                });
+                        $("#clubSelect").append(
+                            new Option(concurrent, $(this).attr("pk"))
+                        );
+                        var id = $(this).attr("pk");
+                    });
+                });
+
+                request.fail(function(jqXHR, textStatus) {
+                    alert("Request failed: " + textStatus);
+                });
+            }, 400);
+        });
+
+         $("#leagueGet").on("keyup", function(event) {
+            event.preventDefault();
+            if (globalTimeout != null) {
+                clearTimeout(globalTimeout);
+            }
+        
+            if (event.which == 27) {
+                $("#leagueGetResultList").hide();
+                $("#clubGet").val('')
+            }
+
+            globalTimeout = setTimeout(function() {
+                globalTimeout = null;
+                var request = $.ajax({
+                    url: "/scoresheet/league/search",
+                    type: "post",
+                    data: 'motif=' + $("#leagueGet").val()
+                });
+
+                request.done(function(msg) {
+                    if ($("#leagueGet").val().length > 0) {
+                        $("#leagueGetResultList").show();
+                    } else {
+                        $("#leagueGetResultList").hide();
+                        $("#leagueSelect")
+                            .children()
+                            .remove();
+                    }
+
+                    $("#leagueSelect")
+                        .children()
+                        .remove();
+                    $(msg)
+                        .find("object")
+                        .each(function() {
+                            var concurrent = "";
+                            $(this)
+                                .find("field")
+                                .each(function() {
+                                    concurrent += " " + $(this).text();
+                                });
+                        $("#leagueSelect").append(
+                            new Option(concurrent, $(this).attr("pk"))
+                        );
+                        var id = $(this).attr("pk");
+                    });
+                });
+
+                request.fail(function(jqXHR, textStatus) {
+                    alert("Request failed: " + textStatus);
+                });
+            }, 400);
+        });
+
+        $("#concurrentSelect").change(function() {
+            var id = $(this).val();
+            window.location = '/scoresheet/search/' + id + '/{{ season.id }}';
+        });       
+        $("#clubSelect").change(function() {
+            var id = $(this).val();
+            window.location = '/scoresheet/search-by-club/' + id + '/0' + '/{{ season.id }}';
+        });       
+        $("#leagueSelect").change(function() {
+            var id = $(this).val();
+            window.location = '/scoresheet/search-by-club/0/' + id + '/{{ season.id }}';
+        });       
+
+    </script>
+{% endblock %}

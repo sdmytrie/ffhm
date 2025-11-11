@@ -1,0 +1,171 @@
+{% extends "scoresheet/base.html" %}
+{% load i18n static %}
+
+{% block extra_css %}
+<link rel="stylesheet" type="text/css" href="{% static 'scoresheet/css/modules/season.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'scoresheet/css/modules/minimumweightcategory.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 minimumweightcategory-box">
+        <div class="season">
+            {% if request.user.is_superuser %}
+                {% include "scoresheet/season/_season_select.html" with current_season=season.id season_url_value=season_url_value %}
+            {% else %}
+                <strong>{{ season.name }}</strong>
+            {% endif %}
+            {{ scoresheet.check_season }}
+        </div>
+        <table class="table table-condensed table-sm table-bordered table-hover minimumweightcategory-datatable">
+            <tbody>
+                <tr>
+                    {% if gender.id == 2 and master == "0" %}
+                        <th class="minimumweightcategory_unchecked">
+                            <font style="color:#79aec8;">Minima masculin</font>
+                        </th>
+                    {% else %}
+                        <th class="minimumweightcategory_checked">
+                            <a href="{% url 'scoresheet:minimumweightcategory_view' 2 0 season.id %}">Minima masculin</a>
+                        </th>
+                    {% endif %}
+
+                    {% if gender.id == 3 and master == "0" %}
+                        <th class="minimumweightcategory_unchecked">
+                            <font style="color:#79aec8;">Minima f&eacute;minin</font>
+                        </th>
+                    {% else %}
+                        <th class="minimumweightcategory_checked">
+                            <a href="{% url 'scoresheet:minimumweightcategory_view' 3 0 season.id %}">Minima f&eacute;minin</a>
+                        </th>
+                    {% endif %}
+
+                    {% if gender.id == 2 and master == "1" %}
+                        <th class="minimumweightcategory_unchecked">
+                            <font style="color:#79aec8;">Minima masculin Masters</font>
+                        </th>
+                    {% else %}
+                        <th class="minimumweightcategory_checked">
+                            <a href="{% url 'scoresheet:minimumweightcategory_view' 2 1 season.id %}">Minima masculin Masters</a>
+                        </th>
+                    {% endif %}
+
+                    {% if gender.id == 3 and master == "1" %}
+                        <th class="minimumweightcategory_unchecked">
+                            <font style="color:#79aec8;">Minima f&eacute;minin Masters</font>
+                        </th>
+                    {% else %}
+                        <th class="minimumweightcategory_checked">
+                            <a href="{% url 'scoresheet:minimumweightcategory_view' 3 1 season.id %}">Minima f&eacute;minin Masters</a>
+                        </th>
+                    {% endif %}
+
+                </tr>
+            </tbody>
+        </table>
+    
+        {% if gender.id > 1 %}
+            {% for agecategory in agecategory_list %}
+                {% if agecategory.gender.id == gender.id %}
+                    <table class="table table-condensed table-sm table-bordered table-hover minimumweightcategory-datatable">
+                        <thead>
+                        {% if season.id < 9 %}
+                          {% if master == "0" %}
+                              <tr>
+                                  <th style="background: #0000ff; color: #ffffff; ">{{ agecategory.name }}</th>
+                                  <th style="background: #79aec8;">DEB</th>
+                                  <th style="background: #79aec8;">DPT</th>
+                                  <th style="background: #79aec8;">REG</th>
+                                  <th style="background: #79aec8;">IRG</th>
+                                  <th style="background: #79aec8;">FED</th>
+                                  <th style="background: #79aec8;">NAT</th>
+                                  <th style="background: #79aec8;">INT B</th>
+                                  <th style="background: #79aec8;">INT A</th>
+                                  <th style="background: #79aec8;">OLY</th>
+                              </tr>
+                          {% else %}
+                              <tr>
+                                  <th style="background: #79aec8;">{{ agecategory.name }}</th>
+                                  <th style="background: #79aec8;">MONDE</th>
+                                  <th style="background: #79aec8;">EUROPE</th>
+                                  <th style="background: #79aec8;">FRANCE</th>
+                                  <th style="background: #79aec8;">REGION</th>
+                              </tr>
+                          {% endif %}
+                        {% else %}
+                          {% if master == "0" %}
+                              <tr>
+                                  <th style="background: #0000ff; color: #ffffff; ">{{ agecategory.name }}</th>
+                                  <th style="background: #79aec8;">DEB</th>
+                                  <th style="background: #79aec8;">DPT</th>
+                                  <th style="background: #79aec8;">REG</th>
+                                  <th style="background: #79aec8;">IRG</th>
+                                  <th style="background: #79aec8;">HON</th>
+                                  <th style="background: #79aec8;">NAT</th>
+                                  <th style="background: #79aec8;">EUR</th>
+                                  <th style="background: #79aec8;">MON</th>
+                              </tr>
+                          {% else %}
+                              <tr>
+                                  <th style="background: #79aec8;">{{ agecategory.name }}</th>
+                                  <th style="background: #79aec8;">MONDE</th>
+                                  <th style="background: #79aec8;">EUROPE</th>
+                                  <th style="background: #79aec8;">FRANCE</th>
+                                  <th style="background: #79aec8;">REGION</th>
+                              </tr>
+                          {% endif %}
+                        {% endif %}
+                        </thead>
+                        <tbody>
+                        {% for weightcategory in agecategory.weightcategory_set.all %}
+                            <tr class="{% cycle 'row1' 'row2' %}">
+                                <td style="background: silver; width: 3.8rem;">
+                                    {% if perms.scoresheet.change_weightcategory %}
+                                        <b><a href="{% url 'admin:api_weightcategory_change' weightcategory.id %}?next={{ request.path }}">
+                                                {{ weightcategory.weight }}
+                                            </a>
+                                        </b>
+                                    {% else %}
+                                        {{ weightcategory.weight }}
+                                    {% endif %}
+                                </td>
+                                {% for minimumweightcategory in weightcategory.minimumweightcategory_set.all %}
+                                    {% if forloop.counter == 6 %}
+                                        <td  style="background: #cceeed; width: 3.8rem;">
+                                    {% else %}
+                                        <td  style="width: 3.8rem;">
+                                    {% endif %}
+                                        {% if perms.scoresheet.change_minimumweightcategory %}
+                                            <div id="minimumweightcategory_{{ minimumweightcategory.id }}" ondblclick="minimumweightcategoryViewForm({{ minimumweightcategory.id }});">
+                                                <div id="value_minimumweightcategory_{{ minimumweightcategory.id }}">
+                                                    <b><p style="display: inline-block;">{{ minimumweightcategory.weight }}</p></b>
+                                                </div>
+
+                                                <div id="form_minimumweightcategory_{{ minimumweightcategory.id }}" style="display: none;">
+                                                    <input type="text" id="input_minimumweightcategory_{{ minimumweightcategory.id }}" value="{{ minimumweightcategory.weight }}" size="3" style="padding: 4px;" autocomplete="off"/>
+                                                </div>
+                                            </div>
+                                        {% else %}
+                                            <div>
+                                                <b><p style="display: inline-block;">{{ minimumweightcategory.weight }}</p></b>
+                                            </div>
+                                        {% endif %}
+                                    </td>
+                                {% endfor %}
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block javascript %}
+    {{ block.super }}
+
+    <script  src="{% static 'scoresheet/js/competition.js' %}"></script>
+
+{% endblock %}

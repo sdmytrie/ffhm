@@ -1,0 +1,95 @@
+.competition-button_add {
+  color: aliceblue !important;
+  font-size: 0.8rem;
+  display: inline-block;
+}
+
+.competition-box {
+  background-color: rgba(117, 190, 218, 0.5);
+}
+
+.competition__button-add a {
+  color: white !important;
+}
+
+.competition-datatable {
+  font-size: 0.8rem;
+  width: 80vw;
+  background-color: white;
+}
+
+.competition-datatable__col-sm {
+  display: none;
+}
+
+.competition-datatable__col-md {
+  display: none;
+}
+
+@media (min-width: 40rem) {
+  .competition-datatable__col-sm {
+    display: table-cell;
+  }
+}
+
+@media (min-width: 60rem) {
+  .competition-datatable__col-md {
+    /* visibility: visible; */
+    display: table-cell;
+  }
+}
+
+.competition-datatable__form-fixer {
+  font-size: 0.8rem;
+  height: 1.5rem;
+}
+
+#competitionSet_length {
+  display: none;
+}
+
+@media (min-width: 40rem) {
+  #competitionSet_length {
+    font-size: 0.8rem;
+    display: block;
+  }
+
+  #competitionSet_length label {
+    color: white !important;
+  }
+}
+
+#competitionSet_paginate {
+  font-size: 0.8rem;
+  color: white !important;
+}
+
+#competitionSet_paginate a {
+  font-size: 0.8rem;
+}
+
+#competitionSet_info {
+  font-size: 0.8rem;
+  color: white !important;
+}
+
+#competitionSet.dataTable {
+  border-top: 0;
+  border-bottom: 0;
+}
+
+.competition__form input[type="submit"] {
+  color: white !important;
+  display: block;
+  margin: 2rem auto;
+}
+
+.competition__form-box {
+  background-color: rgba(117, 190, 218, 0.75);
+  margin: 2rem auto;
+}
+
+.competition__form-box h3 {
+  background-color: rgba(117, 190, 218, 0.5);
+  color: white;
+}

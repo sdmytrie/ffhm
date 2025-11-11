@@ -1,0 +1,199 @@
+{% load i18n static %}
+
+{% if event.competition.closed is False %}
+    <tbody>
+        <tr class="{% cycle 'row1' 'row2' %}" {% if not team %}
+        {% ifchanged event.weightcategory or event.agecategory %}
+            style="border-top: 2px solid black;"
+        {% endifchanged %}{% endif %}>
+            {% if event.team == None %}
+                <td>
+                    {% if perms.scoresheet.change_event %}
+                        <div id="draw_{{ event.id }}" ondblclick="eventViewDrawForm({{ event.id }});">
+
+                            <div id="value_draw_{{ event.id }}">
+                                {{ event.draw }}
+                            </div>
+
+                            <div id="form_draw_{{ event.id }}" style="display: none;">
+                                <input type="text" id="input_draw_{{ event.id }}" value="{{ event.draw }}" size="3" autocomplete="off"/>
+                            </div>
+
+                        </div>
+                    {% else %}
+                        <div id="weight_{{ event.id }}">
+                            <div id="value_draw_{{ event.id }}">
+                                {{ event.draw }}
+                            </div>
+                        </div>
+                    {% endif %}
+                </td>
+            {% endif %}
+            <td>
+                {{ event.concurrent.licence }}
+            </td>
+            <td>
+                {% if event.id == next_event.id and not event.has_ended and event.has_begun %}
+                    <span class="text-success blink">
+                        <b>{{ event.concurrent.lastname.upper }}&nbsp;{{ event.concurrent.firstname.capitalize }}</b>
+                    </span>
+                {% elif event.id == nextnext_event.id and not event.has_ended and event.has_begun %}
+                    <span class="text-primary">
+                        <b>{{ event.concurrent.lastname.upper }}&nbsp;{{ event.concurrent.firstname.capitalize }}</b>
+                    </span>
+                {% else %}
+                    <b>
+                        <a href="{% url 'scoresheet:search' event.concurrent.id %}">
+                            {{ event.concurrent.lastname.upper }}&nbsp;{{ event.concurrent.firstname.capitalize }}
+                        </a>
+                    </b>
+                {% endif %}
+            </td>
+            <td class="event-datatable__col-md">
+                {{ event.concurrent.date_of_birth|date:"Y" }}
+            </td>
+            <td class="event-datatable__col-md">
+                {{ event.clubName }}
+            </td>
+            <td class="event-datatable__col-md">
+                {{ event.concurrent.country }}
+            </td>
+            <td>
+                {% if perms.scoresheet.change_event %}
+                    <div id="weight_{{ event.id }}" ondblclick="eventViewWeightForm({{ event.id }});" 
+                        {% if event.weight == 0 %}class="bg-danger text-light" {% endif %}>
+
+                        <div id="value_weight_{{ event.id }}">
+                            {{ event.weight }}
+                        </div>
+
+                        <div id="form_weight_{{ event.id }}" style="display: none;">
+                            <input type="text" id="input_weight_{{ event.id }}" value="{{ event.weight }}" size="3" autocomplete="off"/>
+                        </div>
+
+                    </div>
+                {% else %}
+                    <div>
+                        {{ event.weight }}
+                    </div>
+                {% endif %}
+            </td>
+
+            {% for attempt in event.getARRAttemptSet %}
+                    <td style="text-align: center;">
+                        {% if perms.scoresheet.change_attempt %}
+                            <div id="attempt_{{ attempt.id }}" ondblclick="attemptViewForm('{{ attempt.id }}');"
+                                 {% if attempt.value == best_arr %} style="border:solid 2px black;" {% endif %}>
+                                <div id="value_attempt_{{ attempt.id }}" class="attempt_{{ attempt.validate }} pl-2">
+                                    <strong>{%if attempt.validate == 2%}-{%endif%}{{ attempt.value }}</strong>
+                                </div>
+
+                                <div id="form_attempt_{{ attempt.id }}" style="display: none;">
+                                    <input type="text" id="input_attempt_{{ attempt.id }}" value="{{ attempt.value }}" size="3" autocomplete="off"/>
+                                    {% if attempt.validate > 0 %}
+                                        <a href="{% url 'scoresheet:attempt_validate' 0 attempt.id %}" onclick="javascript:popupWait()">
+                                            <img src="{% static 'scoresheet/img/icon-unknown.svg' %}"/>
+                                        </a>
+                                    {% endif %}
+                                </div>
+                                {% if event.id == next_event.id and attempt.id == event.firstARRAttemptNotValidate.id and attempt.value > 0 and event.weight > 0 and competition.can_begin %}
+                                    <span id="validate_{{ attempt.id }}">
+                                        <a href="{% url 'scoresheet:attempt_validate' 1 attempt.id %}" onclick="javascript:popupWait()">
+                                            <img src="{% static 'scoresheet/img/icon-yes.svg' %}"/>
+                                        </a>
+                                        <a href="{% url 'scoresheet:attempt_validate' 2 attempt.id %}" onclick="javascript:popupWait()">
+                                            <img src="{% static 'scoresheet/img/icon-no.svg' %}"/>
+                                        </a>
+                                    </span>
+                                {% endif %}
+
+                            </div>
+                        {% else %}
+                            <div class="attempt_{{ attempt.validate }}"
+                                 {% if attempt.value == best_arr %} style="border:solid 2px black;" {% endif %}>
+                                <strong>{%if attempt.validate == 2%}-{%endif%}{{ attempt.value }}</strong>
+                            </div>
+                        {% endif %}
+                    </td>
+            {% endfor %}
+            <td style="text-align: center;{% if event.totalSet.0 == best_total_arr %} background-color: yellow;{% endif %}">
+                <strong>{{ event.totalSet.0 }}</strong>
+            </td>
+            {% for attempt in event.getEPJAttemptSet %}
+                    <td style="text-align: center;">
+                        {% if perms.scoresheet.change_attempt %}
+                            <div id="attempt_{{ attempt.id }}" ondblclick="attemptViewForm('{{ attempt.id }}');"
+                                 {% if attempt.value == best_epj %} style="border:solid 2px black;" {% endif %}>
+                                <div id="value_attempt_{{ attempt.id }}" class="attempt_{{ attempt.validate }} pl-2">
+                                    <strong>{%if attempt.validate == 2%}-{%endif%}{{ attempt.value }}</strong>
+                                </div>
+
+                                <div id="form_attempt_{{ attempt.id }}" style="display: none;">
+                                    <input type="text" id="input_attempt_{{ attempt.id }}" value="{{ attempt.value }}" size="3" autocomplete="off"/>
+                                    {% if attempt.validate > 0 %}
+                                        <a href="{% url 'scoresheet:attempt_validate' 0 attempt.id %}" onclick="javascript:popupWait()" style="display: inline;">
+                                            <img src="{% static 'scoresheet/img/icon-unknown.svg' %}"/>
+                                        </a>
+                                    {% endif %}
+                                </div>
+                                {% if event.id == next_event.id and attempt.id == event.firstEPJAttemptNotValidate.id and not event.firstARRAttemptNotValidate and attempt.value > 0 %}
+                                    <span id="validate_{{ attempt.id }}">
+                                        <a href="{% url 'scoresheet:attempt_validate' 1 attempt.id %}" onclick="javascript:popupWait()" style="display: inline;">
+                                            <img src="{% static 'scoresheet/img/icon-yes.svg' %}"/>
+                                        </a>
+                                        <a href="{% url 'scoresheet:attempt_validate' 2 attempt.id %}" onclick="javascript:popupWait()" style="display: inline;">
+                                            <img src="{% static 'scoresheet/img/icon-no.svg' %}"/>
+                                        </a>
+                                    </span>
+                                {% endif %}
+                            </div>
+
+                        {% else %}
+                            <div class="attempt_{{ attempt.validate }}"
+                                 {% if attempt.value == best_epj %} style="border:solid 2px black;" {% endif %}>
+                                <strong>{%if attempt.validate == 2%}-{%endif%}{{ attempt.value }}</strong>
+                            </div>
+                        {% endif %}
+                    </td>
+            {% endfor %}
+
+            <td style="text-align: center;{% if event.totalSet.1 == best_total_epj %} background-color: yellow;{% endif %}">
+                <strong>{{ event.totalSet.1 }}</strong>
+            </td>
+            <td style="text-align: center;{% if event.total == best_total %} background-color: yellow;{% endif %}">
+                <strong>{{ event.total }}</strong>
+            </td>
+            <td class="event-datatable__col-md" style="text-align: center;">
+                {% if event.minimumweightcategory.name and not competition.isminime %}
+                    {{ event.minimumweightcategory.name }}
+                {% else %}
+                    N.C.
+                {% endif %}
+            </td>
+            <td class="event-datatable__col-md" style="text-align: center;">
+                {% if event.competition.ismaters %}
+                    {{ event.agecategory }} {{ event.categorie }}&nbsp;{{ event.weightcategory.weight }}
+                {% else %}
+                    {% if 'W' in event.agecategory.name or 'M' in event.agecategory.name %}
+                        {{ event.agecategory.name }} {{ event.categorie }}&nbsp;{{ event.weightcategory.weight }}
+                    {% else %}
+                        {{ event.agecategory.name | slice:"3" }} {{ event.categorie }}&nbsp;{{ event.weightcategory.weight }}
+                    {% endif %}
+                {% endif %}
+            </td>
+            <td class="event-datatable__col-md" style="text-align: center;">
+                {{ event.iwf|floatformat:2 }}
+            </td>
+            <td>
+                {% if perms.scoresheet.delete_event %}
+                    <a href="{% url 'scoresheet:event_delete' event.id %}" 
+                        onclick="return confirm('Etes-vous sûr de vouloir supprimer {{ event.concurrent.firstname.capitalize }} {{ event.concurrent.lastname.upper }} ?')">
+                        <img src="{% static 'scoresheet/img/icon-deletelink.svg' %}"/>
+                    </a>
+                {% else %}
+                    &nbsp;
+                {% endif %}
+            </td>
+        </tr>
+    </tbody>
+{% endif %}

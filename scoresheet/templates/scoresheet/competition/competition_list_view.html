@@ -1,0 +1,219 @@
+{% extends "scoresheet/base.html" %}
+{% load i18n static %}
+
+{% block title %}FFHM{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" type="text/css" href="{% static 'scoresheet/css/modules/season.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'scoresheet/css/modules/competition.css' %}">
+{% endblock %}
+
+{% block content %}
+
+    <div class="row">
+        <div class="col-md-12 competition-box">
+            <div class="season">
+                {% if request.user.is_superuser %}
+                    {% include "scoresheet/season/_season_select.html" with current_season=season.id season_url_value=season_url_value %}
+                {% else %}
+                    <strong>{{ season.name }}</strong>
+                {% endif %}
+                {{ scoresheet.check_season }}
+            </div>
+            <div class="main-menu">
+                <h3 class="main-menu__item">Liste des comp&eacute;titions - <u>gestion des compétitions</u></h3>
+                <p class="main-menu__item">
+                    ({{ competition_list | length }} compétitions)
+                </p>
+            </div>
+            <div class="competition__button-add">
+                {% if perms.scoresheet.add_competition and current_season.id == season_id or season_id == 0 %}
+                <a href="{% url 'scoresheet:competition_add' season.id %}"
+                   class="btn btn-success">
+                    <img src="{% static 'scoresheet/img/icon-addlink.svg' %}"
+                         alt="Ajouter" />
+                    Ajouter
+                </a>
+                {% endif %}
+            </div>
+            <br>
+            {% if season_id == 0 or current_season.id == season_id %}
+		        <nav class="navbar navbar-expand-lg navbar-fixed-top d-print-none navbar-dark bg-dark mynavbar-main">
+			        <ul class="nav navbar-nav ml-auto text-white">
+                        <li class="nav-item"> 
+                            <a class="nav-link {% if week_filter == "0" %} active {% endif %}" href="{% url 'scoresheet:competition_list_view' %}">Cette semaine</a> 
+                        </li>
+                        <li class="nav-item"> 
+                            <a class="nav-link {% if week_filter == "3" %} active {% endif %}" href="{% url 'scoresheet:competition_list_view' season_id 3 %}">Semaine dernière</a> 
+                        </li>
+                        <li class="nav-item"> 
+                            <a class="nav-link {% if week_filter == "1" %} active {% endif %}" href="{% url 'scoresheet:competition_list_view' season_id 1 %}">A venir</a>
+                        </li> 
+                        <li class="nav-item"> 
+                            <a class="nav-link {% if week_filter == "2" %} active {% endif %}" href="{% url 'scoresheet:competition_list_view' season_id 2 %}">Archives</a> 
+                        </li> 
+                    </ul>
+                </nav>
+            {% endif %}
+            <table id="competitionSet" class="table table-condensed table-sm table-striped table-hover competition-datatable">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>&nbsp;</th>
+                        <th>Nom</th>
+                        <th class="competition-datatable__col-sm">Ligue</th>
+                        <th class="competition-datatable__col-md">Genre</th>
+                        <th class="competition-datatable__col-md">&nbsp;</th>
+                        <th class="competition-datatable__col-sm">Date</th>
+                        <th class="competition-datatable__col-sm">Etat</th>
+                        <th class="competition-datatable__col-sm">Visibilité</th>
+                        <th>&nbsp;</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if not competition_list %}
+                        <tr>
+                            <td style="width: 500px;">Aucune comp&eacute;tition</td>
+                        </tr>
+                    {% endif %}
+                    {% for competition in competition_list %}
+                        <tr>
+                            {% if user.is_staff or perms.scoresheet.change_competition and not competition.closed %}
+                                <td style="width: 1%;">
+                                    <a href="{% url 'scoresheet:competition_edit' competition.id %}">
+                                        <img src="{% static 'scoresheet/img/icon-changelink.svg' %}" alt="G&eacute;rer" />
+                                    </a>
+                                </td>
+                            {% else %}
+                                <td>&nbsp;</td>
+                            {% endif %}
+                            <td>
+                                {% if competition.isteam %}
+                                    <a href="{% url 'scoresheet:team_competition_view' competition.id %}">{{ competition.name }}</a>
+                                {% else %}
+                                    <a href="{% url 'scoresheet:competition_view' competition.id %}">{{ competition.name }}</a>
+                                {% endif %}
+                            </td>
+                            <td class="text-nowrap competition-datatable__col-sm">
+                                {% if competition.user.profile.region %}
+                                    {{ competition.user.profile.region }}
+                                {% else %}
+                                    {{ competition.user.username }}
+                                {% endif %}
+                            </td>
+                            <td class="text-nowrap competition-datatable__col-md">
+                                {{ competition.gender }}
+                            </td>
+                            <td class="text-nowrap competition-datatable__col-md">
+                                {% if competition.isteam %}
+                                    Equipes
+                                {% else %}
+                                    Individuel
+                                {% endif %}
+                                {% if competition.isminime %}
+                                    / minime
+                                {% endif %}
+                            </td>
+                            <td data-order="{{ competition.start_date|date:'Ymd' }}" class="text-nowrap competition-datatable__col-sm">
+                                {{ competition.start_date|date:'l d F Y' }}
+                            </td>
+                            <td class="text-nowrap competition-datatable__col-sm">
+                                {% if competition.closed %}
+                                    Close
+                                {% else %}
+                                    Ouverte
+                                {% endif %}
+                            </td>
+                            <td class="text-nowrap competition-datatable__col-sm" style="width:5%">
+                                {% if competition.visibility %}
+                                    NAT
+                                {% else %}
+                                    REG
+                                {% endif %}
+                            </td>
+                            {% if user.is_superuser or perms.scoresheet.delete_competition and not competition.closed %}
+                                <td style="width: 1%;">
+                                    <a href="{% url 'scoresheet:competition_delete' competition.id %}" 
+                                        onclick="return confirm('Etes-vous sûr de vouloir supprimer {{ competition.name }} ?')">
+                                        <img src="{% static 'scoresheet/img/icon-deletelink.svg' %}"/>
+                                    </a>
+                                </td>
+                            {% else %}
+                                <td>&nbsp;</td>
+                            {% endif %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascript %}
+    {{ block.super }}
+
+    <script  src="{% static 'scoresheet/js/competition.js' %}"></script>
+    
+    <script type="text/javascript">
+
+        var table = $('#competitionSet').DataTable({
+            dom: 'Bplrti',
+            order: [[5, 'desc']],
+            aLengthMenu: [[10, 20, 40, -1], [10, 20, 40, "All"]],
+            iDisplayLength: 10,
+            language: {
+                paginate: {
+                    previous: "&lt;",
+                    next: "&gt;"
+                }
+            },
+            columnDefs: [ 
+                {
+                    targets: 0,
+                    orderable: false
+                }, 
+                {
+                    targets: 8,
+                    orderable: false
+                } 
+            ]
+        });
+
+        thClone = $('#competitionSet thead tr').clone().appendTo('#competitionSet thead')
+        $('#competitionSet thead tr:eq(1) th').each(function(i) {
+            if(i != 0 && i != 8) {
+              $(this).html('<div class="input-group input-group-sm mb-1"><input id="col-input-' + i + '" type="text" class="form-control ps-1 pe-1" /></div>')
+
+              $('input', this).on('keyup change', function() {
+                  if (table.column(i).search() !== this.value) {
+                      table
+                          .column(i)
+                          .search(this.value, true, false)
+                          .draw()
+                  }
+              })
+            } else {
+                $(this).html("")
+            }
+        })
+        thClone.find('th').attr('data-dt-order', 'disable')
+        thClone.find('th').attr('class', '')
+
+        //table.columns(5).filter(function(value, index) {
+        //    if(value == "sam 29 Jan 2022") {
+        //        return value
+        //    }
+        //}).draw()
+        //table.columns(5).each(function() {
+        //    var that = this
+        //    var options = { weekday: 'long', year: 'numeric', month: 'long', day: '2-digit' }
+
+        //    today = new Date()
+        //    console.log(today.toLocaleDateString("fr-FR", options))
+        //    //if(that.search() == "sam 29 Jan 2022") {
+        //        that.search("^((?!(samedi 05)).)*$", true, true).draw()
+        //        //that.search("sam 29 Jan 2022", true, false).draw()
+        //        //that.search("2022").draw()
+        //    //}
+        //})
+    </script>
+{% endblock %}

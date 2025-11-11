@@ -1,0 +1,26 @@
+{% csrf_token %}
+<div class="form-group row form__date">
+    <label for="startDate"
+           class="col-md-1 col-form-label">Entre</label>
+    <div class="col-md-3">
+        <input type="text"
+               class="form-control"
+               id="startDate"
+               name="startDate"
+               value="{{ start_date|date:'d/m/Y' }}">
+    </div>
+
+    <label for="endDate"
+           class="col-md-1 col-form-label">et</label>
+    <div class="col-md-3">
+        <input type="text"
+               class="form-control"
+               id="endDate"
+               name="endDate"
+               value="{{ end_date|date:'d/m/Y' }}">
+    </div>
+    <div class="col-md-2">
+        <button type="submit"
+                class="btn btn-success">Filtrer</button>
+    </div>
+</div>

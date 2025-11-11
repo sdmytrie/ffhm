@@ -1,0 +1,110 @@
+{% csrf_token %}
+{% load widget_tweaks %}
+
+<div class="row">
+  <div class="col-md-12">
+    <label for="{{ form.kind.id_for_label }}">
+        <strong>Type</strong>
+    </label>
+    {{ form.kind|add_class:"form-control" }}
+    <br>
+    <label for="{{ form.name.id_for_label }}">
+      <strong>Sous-titre - complément</strong>
+      <br>
+      Automatiquement, le nom de la compétition sera: Ligue - Type - Ville<br>
+      Suivi de votre sous-titre, il n'est pas nécessaire d'indiquer la ligue, le type ou la ville dans le sous-titre
+    </label>
+    {{ form.name|add_class:"form-control" }}
+    
+    <hr class="p-0 mb-0">
+
+    <div {% if not competition %} style="display: none" {% endif %}>
+      <p class="text-white">
+        {% if competition.isteam %}
+          Equipes
+        {% else %}
+          Individuel
+        {% endif %}
+        {% if competition.isminime %}
+          |
+          Minime
+        {% endif %}
+        {% if competition.ismasters %}
+          |
+          Masters
+        {% endif %}
+        |
+        {{ competition.gender }}
+      </p>
+    </div>
+    
+    <div {% if competition %} style="display: none" {% endif %}>
+      {{ form.isteam }} Equipes
+      <input type="checkbox" 
+              id="single" 
+              checked
+              {% if competition and not competition.isteam %}checked{% endif %}/> Individuel
+
+      <label for="{{ form.ismasters.id_for_label }}">
+        <strong>&nbsp;</strong>
+      </label>
+      {{ form.ismasters }} Masters
+
+      <label for="{{ form.isminime.id_for_label }}">
+        <strong>&nbsp;</strong>
+      </label>
+      {{ form.isminime }} Minime
+      <p id="error_single_or_team" 
+         style="border: solid 1px red; background: white; padding: 0.4rem; display: none">
+        Veuillez faire un choix
+      </p>
+    
+      <hr class="p-0 m-0">
+
+      <label for="{{ form.gender.id_for_label }}">
+          <strong>Genre</strong>
+      </label>
+      <br>
+      <span id="mixte" disabled="true">{{ form.gender.0 }}</span>
+      <span id="gender_1">{{ form.gender.1 }}</span>
+      <span id="gender_2">{{ form.gender.2 }}</span>
+      
+    </div>
+    
+    <hr class="p-0 m-0">
+
+    <div class="col-md-4 pl-0">
+      {{ form.isrecordeligible }} Eligible aux records de France
+    </div>
+
+    <hr class="p-0 m-0">
+
+    <div class="col-md-4 pl-0">
+      <label for="{{ form.start_date.id_for_label }}">
+        <strong>Date</strong>
+      </label>
+      {{ form.start_date|add_class:"form-control" }}
+    </div>
+
+<div class="row form-group justify-content-md-center" style="display: none">
+  <label for="{{ form.troop.id_for_label }}"
+    class="col-md-2 col-form-label"
+    style="font-size: 14px">
+    <strong>Nb de participants</strong>
+  </label>
+  <div class="col-md-8">{{ form.troop }}</div>
+</div>
+
+    <label for="{{ form.place.id_for_label }}">
+      <strong>Ville</strong>
+    </label>
+    {{ form.place|add_class:"form-control" }}
+
+    <label for="{{ form.address.id_for_label }}">
+      <strong>Adresse</strong>
+    </label>
+    {{ form.address|add_class:"form-control" }}
+
+    <input type="submit" class="btn btn-success" id="save_competition" value="Enregistrer" />
+  </div>
+</div>

@@ -1,0 +1,27 @@
+{% extends "scoresheet/base.html" %}
+{% load i18n static %}
+
+{% block title %}FFHM{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" type="text/css" href="{% static 'scoresheet/css/modules/competition.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6 border border-light competition__form-box">
+        <h3>Editer la compétition {{ competition.name }}</h3>
+        <hr class="m-0">
+        <form action="{% url 'scoresheet:competition_edit' competition_id %}" method="POST" class="competition__form">
+            {% include "./_competition_form.html" with form=form %}
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascript %}
+    {{ block.super }}
+    <script>
+        $(".datepicker").datepicker({ 'dateFormat': 'dd-mm-yy' });
+    </script>
+{% endblock %}

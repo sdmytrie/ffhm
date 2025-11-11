@@ -1,0 +1,96 @@
+{% extends "scoresheet/base.html" %}
+{% load i18n static %}
+
+{% block title %}FFHM{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" type="text/css" href="{% static 'scoresheet/css/modules/season.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'scoresheet/css/modules/competition.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-auto competition-box">
+        <div class="season">
+            {% include "scoresheet/season/_season_select.html" with current_season=season.id season_url_value=season_url_value %}
+            {{ scoresheet.check_season }}
+        </div>
+        <div class="main-menu">
+            <h3 class="main-menu__item">Liste des comp&eacute;titions - <u>consultation uniquement</u></h3>
+            <p class="main-menu__item">
+                ({{ competition_list | length }} compétitions)
+            </p>
+        </div>
+        <table id="competitionSet" class="table table-striped table-hover competition-datatable w-100">
+            <thead class="thead-dark">
+                <tr>
+                    <th class="competition-datatable__col-md">Nom</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% if not competition_list %}
+                <tr>
+                    <td>Aucune comp&eacute;tition</td>
+                </tr>
+            {% endif %}
+            {% for competition in competition_list %}
+                <tr>
+                    <td class="width: 100%">
+                        {% if competition.visibility or competition.user.profile.region == request.user.profile.region or request.user.is_superuser %}
+                            {% if competition.isteam %}
+                                <a href="{% url 'scoresheet:team_competition_view' competition.id %}">{{ competition.name }}</a>
+                            {% else %}
+                                <a href="{% url 'scoresheet:competition_view' competition.id %}">{{ competition.name }}</a>
+                            {% endif %}
+                        {% else %}
+                            {{ competition.name }}
+                        {% endif %}
+                    </td>
+           {% endfor %}
+            </tbody>
+        </table>
+        <br>
+    </div>
+</div>
+{% endblock %}
+{% block javascript %}
+    {{ block.super }}
+
+    <script type="text/javascript">
+
+        $("input:radio[name=currentSeason]").change(function() {
+            value = $("input:radio[name=currentSeason]:checked").val();
+            location.href = value;
+        });
+
+        var table = $('#competitionSet').DataTable({
+            dom: 'Bplrti',
+            ordering: true,
+            aLengthMenu: [[10, 20, 40, -1], [10, 20, 40, "All"]],
+            iDisplayLength: 10,
+            language: {
+                paginate: {
+                    previous: "&lt;",
+                    next: "&gt;"
+                }
+            }
+        });
+
+        thClone = $('#competitionSet thead tr').clone().appendTo('#competitionSet thead')
+        $('#competitionSet thead tr:eq(1) th').each(function(i) {
+              $(this).html('<div class="input-group input-group-sm mb-1"><input id="col-input-' + i + '" type="text" class="form-control ps-1 pe-1" /></div>')
+
+              $('input', this).on('keyup change', function() {
+                  if (table.column(i).search() !== this.value) {
+                      table
+                          .column(i)
+                          .search(this.value, true, false)
+                          .draw()
+                  }
+              })
+        })
+        thClone.find('th').attr('data-dt-order', 'disable')
+        thClone.find('th').attr('class', '')
+
+
+    </script>
+{% endblock %}

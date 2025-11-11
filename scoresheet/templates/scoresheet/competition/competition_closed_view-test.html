@@ -1,0 +1,107 @@
+{% extends "scoresheet/base.html" %}
+{% load i18n static %}
+
+{% block content %}
+<div class="row">
+        <div class="col-md-4">
+            {% include "./_competition_title.html" with competition=competition %}
+        </div>
+        <div class="col-md-2 d-print-none">
+            {% if perms.scoresheet.change_competition and all_done is True %}
+                <ul class="nav">
+                    <li class="nav-item border p-2 mybg-primary">
+                        <a href="{% url 'scoresheet:competition_open' competition.id %}" class="text-light">Ouvrir</a>
+                    </li>
+                    <li class="nav-item border p-2 mybg-primary">
+                        <a href="{% url 'scoresheet:competitionXls' competition.id %}" class="text-light">Excel</a>
+                    </li>
+                </ul>
+            {% endif %}
+        </div>
+        <div class="col-md">
+            <table class="table table-condensed table-sm table-bordered table-hover">
+                <tbody>
+                    <tr>
+                        {% for leadertype in leadertype_list %}
+                            <th style="text-align: left;">
+                                {{ leadertype.name }}
+                            </th>
+                            <td style="border-right: solid 1 blue;">
+                                {% for leader in leader_list %}
+                                    {% if leader.leadertype.id == leadertype.id %}
+                                        {{ leader.concurrent.firstname }}&nbsp;{{ leader.concurrent.lastname }}
+                                    {% endif %}
+                                {% endfor %}
+                            </td>
+                            {% if forloop.counter == 3 or forloop.counter == 6 %}
+                                </tr><tr>
+                            {% endif %}
+                        {% endfor %}
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <table id="allCompetitions">
+                <thead><tr><th  colspan="18">Title</th></tr></thead>
+                <tbody>
+                
+            {% for gender, agecategory_list in event_list.items %}
+                <tr><td colspan="18">
+                <h2>{{ gender.verbosename | upper }}</h2>
+                </td></tr>
+                {% for agecategory, weightcategory_list in agecategory_list.items %}
+                    <tr><td>
+                    <h3>{{ agecategory.name }}</h3>
+                    </td></tr>
+                            <tr>
+                                <th>Licence</th>
+                                <th>Nom</th>
+                                <th>AN</th>
+                                <th>Club</th>
+                                <th>NAT</th>
+                                <th>P.C.</th>
+                                <th style="text-align: center;">1</th>
+                                <th style="text-align: center;">2</th>
+                                <th style="text-align: center;">3</th>
+                                <th style="text-align: center;">ARR</th>
+                                <th style="text-align: center;">1</th>
+                                <th style="text-align: center;">2</th>
+                                <th style="text-align: center;">3</th>
+                                <th style="text-align: center;" nowrap>EPJ</th>
+                                <th style="text-align: center;">TOTAL</th>
+                                <th style="text-align: center;">S&eacute;rie</th>
+                                <th style="text-align: center;">Cat&eacute;gorie</th>
+                                <th style="text-align: center;">IWF</th>
+                            </tr>
+                            {% for weightcategory, concurrent_list in weightcategory_list.items %}
+                                {% for concurrent, event in concurrent_list.items %}
+                                    {% include "../event/_event_closed_datatable.html" with event=event %}
+                                {% endfor %}
+                            {% endfor %}
+                {% endfor %}
+            {% endfor %}
+            
+            </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascript %}
+    {{ block.super }}
+
+    <script type="text/javascript">
+        // $('table[id^=mycompetitionSet_]').DataTable( {
+    $('#allCompetitions').DataTable( {
+        dom: 'Bfrtip',
+        ordering: false,
+        paging: false,
+        buttons: [
+            'print'
+        ]
+    } );
+    </script>
+{% endblock %}

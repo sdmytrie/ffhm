@@ -1,0 +1,147 @@
+{% extends "scoresheet/base.html" %}
+{% load i18n static %}
+
+{% block extra_css %}
+<link rel="stylesheet" type="text/css" href="{% static 'scoresheet/css/modules/season.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'scoresheet/css/modules/event.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'scoresheet/css/modules/ranking.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 ranking-box">
+        <div class="season">
+            {% if request.user.is_superuser %}
+                {% include "scoresheet/season/_season_select.html" with current_season=season.id season_url_value=season_url_value %}
+            {% else %}
+                <strong>{{ season.name }}</strong>
+            {% endif %}
+            {{ scoresheet.check_season }}
+        </div>
+        <div class="main-menu">
+            <h3 class="main-menu__item">Classement Top {{ ranking_name }}</h3>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12 ranking-box">
+        <form action action="{% url 'scoresheet:ranking' %}" method="post" class="d-print-none">
+            {% csrf_token %}
+            <div class="form-group m-1 row">
+                <label for="{{ form.gender.id_for_label }}"
+                    class="col-md-1 col-form-label p-0" 
+                    style="font-size: 14px;">
+                    <strong>Genre</strong>
+                </label>
+                <div class="col-md-4 p-1">
+                    <span>{{ form.gender.0 }}</span>
+                    <span>{{ form.gender.1 }}</span>
+                </div>
+            </div>
+            <div class="form-group m-1 row">
+                <label for="{{ form.age.id_for_label }}"
+                    class="col-md-1 col-form-label p-0" 
+                    style="font-size: 14px;">
+                    <strong>Age</strong>
+                </label>
+                <div class="col-md-6 p-1">
+                    <span>{{ form.age.0 }}</span>
+                    <span>{{ form.age.1 }}</span>
+                    <span>{{ form.age.2 }}</span>
+                    <span>{{ form.age.3 }}</span>
+                    <span>{{ form.age.4 }}</span>
+                    <span>{{ form.age.error }}</span>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-success">Afficher</button>
+        </form>
+    </div>
+</div>
+<hr>
+{% for key, value in event_list.items %}
+    <div class="row">
+        <div class="col-md-12 ranking-box">
+            <table id="competitionSet" class="table table-condensed table-sm table-bordered table-hover table-striped event-datatable">
+                <thead class="thead-dark">
+                    <tr>
+                        <th></th>
+                        <th>Licence</th>
+                        <th>Nom</th>
+                        <th class="event-datatable__col-md">AN</th>
+                        <th class="event-datatable__col-md">Club</th>
+                        <th class="event-datatable__col-md">NAT</th>
+                        <th>P.C.</th>
+                        <th class="event-datatable__col-md" style="text-align: center;">1</th>
+                        <th class="event-datatable__col-md" style="text-align: center;">2</th>
+                        <th class="event-datatable__col-md" style="text-align: center;">3</th>
+                        <th style="text-align: center;">ARR</th>
+                        <th class="event-datatable__col-md" style="text-align: center;">1</th>
+                        <th class="event-datatable__col-md" style="text-align: center;">2</th>
+                        <th class="event-datatable__col-md" style="text-align: center;">3</th>
+                        <th style="text-align: center;">EPJ</th>
+                        <th style="text-align: center;">TOTAL</th>
+                        <th class="event-datatable__col-sm" style="text-align: center;">S&eacute;rie</th>
+                        <th class="event-datatable__col-sm" style="text-align: center;">Cat&eacute;gorie</th>
+                        <th class="event-datatable__col-md" style="text-align: center;">IWF</th>
+                    </tr>
+                </thead>
+                {% for event in value %}
+                    {% if event.concurrent.clubName in clubs or clubs == "all" %}
+                      {% include "../event/_event_ranking_datatable.html" with event=event has_begin=True has_ended=True %}
+                    {% endif %}
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+{% endfor %}
+
+{% endblock %}
+
+{% block javascript %}
+    {{ block.super }}
+
+    <script type="text/javascript">
+        $("input:radio[name=currentSeason]").change(function() {
+            value = $("input:radio[name=currentSeason]:checked").val();
+            location.href = value;
+        });
+    </script>
+
+    <script type="text/javascript">
+        var table = $('#competitionSet').DataTable({
+            dom: 'Bplrti',
+            order: [[18, 'asc']],
+            ordering: true,
+            aLengthMenu: [[10, 20, 40, -1], [10, 20, 40, "All"]],
+            iDisplayLength: 10,
+            language: {
+                paginate: {
+                    previous: "&lt;",
+                    next: "&gt;"
+                }
+            },
+        });
+
+        thClone = $('#competitionSet thead tr').clone().appendTo('#competitionSet thead')
+        $('#competitionSet thead tr:eq(1) th').each(function(i) {
+            if(i != 7 && i != 8 && i != 9 && i != 11 && i != 12 && i != 13) {
+              $(this).html('<div class="input-group input-group-sm mb-1"><input id="col-input-' + i + '" type="text" class="form-control ps-1 pe-1" /></div>')
+
+              $('input', this).on('keyup change', function() {
+                  if (table.column(i).search() !== this.value) {
+                      table
+                          .column(i)
+                          .search(this.value, true, false)
+                          .draw()
+                  }
+              })
+            } else {
+                $(this).html("")
+            }
+        })
+        thClone.find('th').attr('data-dt-order', 'disable')
+        thClone.find('th').attr('class', '')
+
+    </script>
+{% endblock %}

@@ -1,0 +1,17 @@
+services:
+  ffhm-django:
+    build: .
+    user: "1000:1001"
+    volumes:
+      - /home/sdmytrie/Projects/FFHM/ffhm:/app
+    ports:
+      - 8001:8000
+    command: python3 /app/manage.py runserver 0.0.0.0:8000
+    # command: /home/ffhm/.local/bin/uwsgi --ini /home/ffhm/uwsgi.ini
+    networks:
+      - ffhm-network
+
+networks:
+  ffhm-network:
+    driver: bridge
+    name: ffhm-network

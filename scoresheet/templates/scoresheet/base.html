@@ -1,0 +1,259 @@
+{% load i18n static %}
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE|default:'fr-fr' }}" style="font-size:15px">
+<head>
+	<meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+		{% block title %}
+			{{ title }} | {{ site_title|default:_('FFHM') }}
+		{% endblock %}
+    </title>
+    
+    <link rel="stylesheet" type="text/css" href="{% static 'scoresheet/js/jquery-ui-1.12.1/jquery-ui.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'scoresheet/js/jquery-ui-1.12.1/jquery-ui.structure.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'scoresheet/js/jquery-ui-1.12.1/jquery-ui.theme.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'scoresheet/css/jquery/jquery.dataTables.min.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'scoresheet/font-awesome/css/font-awesome.min.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'scoresheet/css/bootstrap/bootstrap.min.css' %}">
+	<link rel="stylesheet" type="text/css" href="{% static 'scoresheet/css/base.css' %}">
+	<link rel="stylesheet" type="text/css" href="{% static 'scoresheet/css/fonts.css' %}">
+	<link rel="stylesheet" type="text/css" href="{% static 'scoresheet/css/layout.css' %}">
+	{% block extra_css %}
+	{% endblock %}
+    
+</head>
+
+<body>
+	{% block background %}
+		<!-- <div class="background"></div> -->
+        <div class="d-print-none">
+            {% if wallpaper_path %}
+                <img style="filter: grayscale(40%); width: 100vw; height: 100vh; position: fixed; z-index: -1" src="{% static wallpaper_path %}" 
+			    	 alt="FFHM">
+            {% endif %}
+        </div>
+	{% endblock %}
+	{% block branding %}
+		<nav class="navbar navbar-dark navbar-expand-lg mynavbar-auth">
+			<a href="{% url 'scoresheet:index' %}"
+			   class="navbar-brand text-white">
+				<img src="{% static 'scoresheet/img/logo-FFHM.png' %}" 
+					 alt="FFHM">
+			</a>
+			<a href="{% url 'scoresheet:index' %}" class="text-white mynavbar-auth__title">
+				Fédération Française d'Haltérophilie - Musculation
+			</a>
+			<button class="navbar-toggler"
+					type="button"
+					data-toggle="collapse"
+					data-target="#mynavbar-auth"
+					aria-controls="mynavbar-auth"
+					aria-expanded="false"
+					aria-label="Toggle navigation">
+				<span class="navbar-toggler-icon"></span>
+			</button>
+			<div class="collapse navbar-collapse mynavbar-auth__auth"
+				 id="mynavbar-auth">
+				<ul class="nav navbar-nav ml-auto text-white">
+					{% if user.is_authenticated %}
+					<li class="nav-item">
+						<a class="nav-link">
+							{% trans 'Welcome,' %}
+							{% firstof user.get_short_name user.get_username %}
+						</a>
+					</li>
+					{% if user.is_superuser %}
+					<li class="nav-item">
+						<a href="{% url 'admin:index' %}"
+						   class="nav-link text-white">
+							Administration
+						</a>
+					</li>
+					{% endif %}
+					{% if user.has_usable_password %}
+					<li class="nav-item">
+						<a href="{% url 'scoresheet:password_change' %}"
+						   class="nav-link text-white">
+							{% trans 'Change password' %}
+						</a>
+					</li>
+					{% endif %}
+					<li class="nav-item">
+                        <form action="{% url 'scoresheet:logout' %}" method="post">
+                            {% csrf_token %}
+                            <button class="btn btn-primary" type="submit">Déconnexion</button>
+                        </form>
+					</li>
+					{% else %}
+					<li class="nav-item">
+						<a href="{% url 'scoresheet:login' %}"
+						   class="nav-link text-white">
+							{% trans 'Log in' %}
+						</a>
+					</li>
+					{% endif %}
+				</ul>
+			</div>
+		</nav>
+	{% endblock %}
+
+	{% block navbar %}
+		<nav class="navbar navbar-expand-lg navbar-fixed-top d-print-none navbar-dark bg-dark mynavbar-main">
+			<a class="navbar-brand"
+			   href="/">
+				<i class="icon-home"></i>
+			</a>
+			<button class="navbar-toggler"
+					type="button"
+					data-toggle="collapse"
+					data-target="#mynavbar-main"
+					aria-controls="mynavbar-main"
+					aria-expanded="false"
+					aria-label="Toggle navigation">
+				<span class="navbar-toggler-icon"></span>
+			</button>
+			<div class="collapse navbar-collapse" id="mynavbar-main">
+				<ul class="navbar-nav mr-auto">
+                    {% if not user_agent == "mobile" and not user_agent == "tablet" %}
+					    {% if request.user.is_authenticated %}
+					    	<li class="nav-item">
+					    		<a href="{% url 'scoresheet:competition_list_view' %}"
+					    		   {% if page == 'competition_list_view' or page == 'team_competition_view' %}
+					    				class="nav-link mynavbar-main__item"
+					    		   {% else %}
+					    				class="nav-link"
+					    		   {% endif %}>
+					    		   Gestion des comp&eacute;titions
+					    		</a>
+					    	</li>
+                        {% endif %}
+					    <li class="nav-item">
+					    	<a href="{% url 'scoresheet:weightcategory_view' %}"
+					    	   {% if page == 'weightcategory_view' %}
+					    			class="nav-link mynavbar-main__item"
+					    	   {% else %}
+					    			class="nav-link"
+					    	   {% endif %}>
+					    	   Cat&eacute;gories de poids
+					    	</a>
+					    </li>
+					    <li class="nav-item">
+					    	<a href="{% url 'scoresheet:agecategory_view' %}"
+					    	   {% if page == 'agecategory_view' %}
+					    	   		class="nav-link mynavbar-main__item"
+					    	   {% else %}
+					    			class="nav-link"
+					    	   {% endif %}>
+					    	   Cat&eacute;gories d'&acirc;ge
+					    	</a>
+					    </li>
+					    <li class="nav-item">
+					    	<a href="{% url 'scoresheet:minimumweightcategory_view' 1 0 %}"
+					    	   {% if page == 'minimumweightcategoryView' %}
+					    	   		class="nav-link mynavbar-main__item"
+					    	   {% else %}
+					    			class="nav-link"
+					    	   {% endif %}>
+					    	   Minima
+					    	</a>
+					    </li>
+					    {% if request.user.is_superuser or request.user.is_staff %}
+					    <li class="nav-item">
+					    	<a href="{% url 'scoresheet:listing' %}"
+					    	   {% if page == 'listing' %}
+					    	   		class="nav-link mynavbar-main__item"
+					    	   {% else %}
+					    			class="nav-link"
+					    	   {% endif %}>
+					    	   Listing
+					    	</a>
+					    </li>
+					    {% endif %}
+					    <li class="nav-item">
+					    	<a href="{% url 'scoresheet:listing_leader' %}"
+					    	   {% if page == 'listing_leader' %}
+					    	   		class="nav-link mynavbar-main__item"
+					    	   {% else %}
+					    			class="nav-link"
+					    	   {% endif %}>
+					    	   Officiels
+					    	</a>
+					    </li>
+					{% endif %}
+					{% if request.user.is_superuser or request.user.is_staff %}
+					    <li class="nav-item">
+					    	<a href="{% url 'scoresheet:ranking' %}"
+					    	   {% if page == 'ranking' %}
+					    	   		class="nav-link mynavbar-main__item"
+					    	   {% else %}
+					    			class="nav-link"
+					    	   {% endif %}>
+					    	   Classement TOP'S
+					    	</a>
+					    </li>
+					{% endif %}
+					{% if request.user.is_superuser or request.user.is_staff %}
+					    <li class="nav-item">
+					    	<a href="{% url 'scoresheet:record' %}"
+					    	   {% if page == 'record' %}
+					    	   		class="nav-link mynavbar-main__item"
+					    	   {% else %}
+					    			class="nav-link"
+					    	   {% endif %}>
+					    	   Records de France (en construction)
+					    	</a>
+					    </li>
+					{% endif %}
+					<li class="nav-item">
+						<a href="{% url 'scoresheet:search' %}"
+						   class="nav-link">
+							<i class="icon-search"></i>
+						</a>
+					</li>
+                </ul>
+				<ul class="navbar-nav mr-auto">
+                    {% if request.user.is_authenticated and page == "competition_list_view" %}
+					    <li class="nav-item">
+						    <span class="nav-link my-2 my-lg-0 text-danger">
+						    	[Mode Gestion des compétitions]
+						    </span>
+                        </li>
+                    {% elif page == "competition_list_view" %}
+					    <li class="nav-item">
+						    <span class="nav-link my-2 my-lg-0 text-danger">
+						    	[Mode Lecture seule]
+						    </span>
+                        </li>
+                    {% endif %}
+
+				</ul>
+			</div>
+		</nav>
+	{% endblock %}
+	<div class="container-fluid">
+		{% block content %}{% endblock %}
+		
+		{% block footer %}<div id="footer"></div>{% endblock %}
+		
+		{% block messages %}
+				{% if messages %}
+				<ul class="messagelist">
+						{% for message in messages %}
+								<li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message|capfirst }}</li>
+						{% endfor %}
+				</ul>
+				{% endif %}
+		{% endblock messages %}
+	</div>
+	
+{% block javascript %}
+	<script type="text/javascript" src="{% static 'scoresheet/js/jquery-3.3.1.min.js' %}"></script>
+	<script type="text/javascript" src="{% static 'scoresheet/js/jquery-ui-1.12.1/jquery-ui.min.js' %}"></script>
+	<script type="text/javascript" src="{% static 'scoresheet/js/jquery.dataTables.min.js' %}"></script>
+	<script type="text/javascript" src="{% static 'scoresheet/js/bootstrap/bootstrap.min.js' %}"></script>
+	<script type="text/javascript" src="{% static 'scoresheet/js/printThis.js' %}"></script>
+{% endblock %}
+</body>
+</html>

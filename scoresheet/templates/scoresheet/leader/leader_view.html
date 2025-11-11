@@ -1,0 +1,69 @@
+{% extends "scoresheet/base.html" %}
+{% load i18n static %}
+
+{% block content %}
+    <div id="content-main">
+
+        <div class="module">
+        <input type="hidden" id="isteam" name="isteam" value="{{ competition.isteam }}" />
+        <table width="100%">
+            <caption>
+                <a href="{% url 'scoresheet:competition_view' competition.id %}" 
+                   class="section">
+                   {{ competition.name }}&nbsp;&nbsp;&nbsp;{{ competition.season }}
+                </a>
+            </caption>
+            <tr>
+                <td width="50px" colspan="2">
+                    <h1>{{ leadertype.name }}</h1>
+                </td>
+            </tr>
+            <tr>
+                <td width="20px;">&nbsp;</td>
+                <td>
+                    {% if leader %}
+                        <h1>{{ leader.concurrent.firstname }}&nbsp;{{ leader.concurrent.lastname }}</h1>
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <td width="20px;">&nbsp;</td>
+                <td>
+                    {% if leader %}
+                        <h1>{{ leader.concurrent.licence }}</h1>
+                    {% endif %}
+                </td>
+            </tr>
+            {% if perms.scoresheet.add_event %}
+                <tr>
+                    <td valign="top">
+                        <input type="hidden" id="currentCompetiton" value="{{ competition.id }}"/>
+                        <input type="hidden" id="leadertypename" value="{{ leadertype.id }}"/>
+                        Ajouter {{ name }} : <input type="text" id="leaderGet" autocomplete="off"/>
+                    </td>
+                    <td valign="top">
+                            <div id="leaderGetResultList" style="display:none; overflow:visible;">
+                                <select id="leaderSelect" size="5">
+                                    <option> --- </option>
+                                </select>
+                            </div>
+                    </td>
+                    <td>
+                        <div id="leader_loader" name="leader_loader" style="display: none;">
+                            <img src="{% static 'scoresheet/img/ajax-loader.gif' %}" style="width: 32px; position: absolute;"/>
+                        </div>
+                    </td>
+                </tr>
+            {% endif%}
+
+        </table>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascript %}
+    {{ block.super }}
+
+    <script  src="{% static 'scoresheet/js/competition.js' %}"></script>
+
+{% endblock %}

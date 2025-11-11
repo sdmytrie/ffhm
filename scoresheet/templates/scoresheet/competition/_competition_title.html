@@ -1,0 +1,38 @@
+{% if user_agent  == "mobile" %}
+    <strong>
+        {{ competition.name }}
+        <br>
+        {{ competition.season }}
+    </strong>
+{% else %}
+    <strong>
+        <h5>{{ competition.name }}</h5>
+        {{ competition.season }}
+    </strong>
+{% endif %}
+<br>
+{{ competition.start_date | date:"d M Y" }} -&nbsp;
+{{ competition.place }}
+{% if competition.ismasters %}
+    Masters
+{% else %}
+    &nbsp;
+{% endif %}
+{% if competition.isminime %}
+    Minime
+{% else %}
+    &nbsp;
+{% endif %}
+{% if competition.isteam %}
+    En &eacute;quipe
+{% else %}
+    Individuelle
+{% endif %}
+<br>
+Ligue: {{ competition.user.profile.region }}
+<br>
+{% if competition.isrecordeligible %}
+    Eligible aux records de France
+{% else %}
+    &nbsp;
+{% endif %}

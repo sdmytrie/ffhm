@@ -1,0 +1,17 @@
+.login {
+  background-color: rgba(117, 190, 218, 0.75);
+  margin: 2rem auto;
+  padding: 2rem 2rem;
+}
+
+.login img {
+    margin: 0.8rem auto;
+    display: block;
+    width: 10rem;
+    background-color: white;
+}
+
+.login button[type="submit"] {
+    margin: 2rem auto;
+    display: block;
+}

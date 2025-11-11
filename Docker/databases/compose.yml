@@ -1,0 +1,48 @@
+version: "3.9"
+
+services:
+  db:
+    image: mariadb
+    user: "1000:1001"
+    restart: always
+    ports:
+      - 3306:3306
+    volumes:
+      - /home/sdmytrie/Projects/FFHM/Volumes/mysql/var/lib/mysql/:/var/lib/mysql
+    environment:
+      TZ: Europe/Paris
+      MARIADB_ROOT_PASSWORD: _Azerty1
+    networks:
+      - ffhm-network
+
+  adminer:
+    image: adminer
+    restart: always
+    command: php -S 0.0.0.0:8080 -t /var/www/html
+    ports:
+      - 8085:8080
+    environment:
+      ADMINER_DESIGN: dracula
+    networks:
+      - ffhm-network
+
+  mongo:
+    image: mongo
+    user: "1000"
+    command: ["--quiet"]
+    restart: always
+    volumes:
+      - /home/sdmytrie/Projects/FFHM/Volumes/mongodb/etc/mongo:/etc/mongo
+      - /home/sdmytrie/Projects/FFHM/Volumes/mongodb/data/db:/data/db
+    environment:
+      TZ: Europe/Paris
+    ports:
+      - 27017:27017
+    networks:
+      - ffhm-network
+
+
+networks:
+  ffhm-network:
+    driver: bridge
+    name: ffhm-network

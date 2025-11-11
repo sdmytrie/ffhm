@@ -1,0 +1,21 @@
+.minimumweightcategory-box {
+  background-color: rgba(117, 190, 218, 0.5);
+}
+
+.minimumweightcategory-datatable {
+  font-size: 0.8rem;
+  width: 80vw;
+  background-color: white;
+}
+
+.minimumweightcategory_unchecked {
+  padding: 0.5rem;
+  background: white;
+  border: solid 1px #79aec8;
+}
+
+.minimumweightcategory_checked {
+  padding: 0.5rem;
+  background: #79aec8;
+  border: solid 1px white;
+}

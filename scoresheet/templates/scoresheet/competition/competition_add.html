@@ -1,0 +1,155 @@
+{% extends "scoresheet/base.html" %}
+{% load i18n static %}
+
+{% block title %}FFHM{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" type="text/css" href="{% static 'scoresheet/css/modules/competition.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6 border border-light competition__form-box">
+        <h3>Ajouter une compétition</h3>
+        <hr class="m-0">
+        <form action="{% url 'scoresheet:competition_add' season.id %}" method="POST" class="competition__form">
+            {% include "./_competition_form.html" with form=form %}
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascript %}
+    {{ block.super }}
+
+    <script>
+        $(".datepicker").datepicker({ 'dateFormat': 'dd-mm-yy' });
+        $('#id_gender_0').prop('disabled', true);
+
+        $('#id_isteam').click(function() {
+            if($(this).is(':checked')) {
+                $('#save_competition').prop('disabled', false);
+                $('#error_single_or_team').hide();
+                $('#single').prop('checked', false);
+
+                $('#id_ismasters').prop('checked', false);
+                $('#id_ismasters').prop('disabled', true);
+
+                $('#id_isminime').prop('disabled', false);
+                
+                if($('#id_isminime').is(':checked')) {
+                    $('#id_gender_0').prop('checked', true);
+                    $('#id_gender_1').prop('checked', false);
+                    $('#id_gender_2').prop('checked', false);
+                } else {
+                    $('#id_gender_1').prop('disabled', false);
+                    $('#id_gender_0').prop('disabled', false);
+                    $('#id_gender_2').prop('disabled', false);
+                }
+            } else {
+                $('#single').prop('disabled', false);
+                $('#save_competition').prop('disabled', true);
+                $('#error_single_or_team').show();
+                $('#id_ismasters').prop('disabled', false);
+                if($('#id_isminime').is(':checked')) {
+                    $('#id_gender_0').prop('checked', true);
+                    $('#id_gender_1').prop('checked', false);
+                    $('#id_gender_2').prop('checked', false);
+                }
+            }
+        });
+
+        $('#single').click(function() {
+            if($(this).is(':checked')){
+                $('#save_competition').prop('disabled', false);
+                $('#error_single_or_team').hide();
+                $('#id_isteam').prop('checked', false);
+
+                if($('#id_isminime').is(':checked')){
+                    $('#ismasters_tr').prop('checked', false);
+                    $('#ismasters_tr').prop('disabled', true);
+                    
+                    $('#id_gender_0').prop('disabled', false);
+                    $('#id_gender_0').prop('checked', true);
+                    $('#id_gender_1').prop('checked', false);
+                    $('#id_gender_1').prop('disabled', true);
+                    $('#id_gender_2').prop('checked', false);
+                    $('#id_gender_2').prop('disabled', true);
+                } else {
+                    $('#id_ismasters').prop('checked', false);
+                    $('#id_ismasters').prop('disabled', false);
+
+                    $('#id_gender_0').prop('checked', false);
+                    $('#id_gender_0').prop('disabled', true);
+                }
+            } else {
+                $('#save_competition').prop('disabled', true);
+                $('#error_single_or_team').show();
+                $('#id_isteam').prop('disabled', false);
+                
+                if($('#id_isminime').is(':checked')) {
+                    $('#id_gender_0').prop('checked', true);
+                    $('#id_gender_1').prop('checked', false);
+                    $('#id_gender_2').prop('checked', false);
+                    $('#id_gender_1').prop('disabled', true);
+                    $('#id_gender_2').prop('disabled', true);
+                } else {
+                    $('#id_gender_0').prop('disabled', false);
+                    $('#id_gender_0').prop('checked', false);
+                }
+            }
+        });
+
+        $('#id_ismasters').click(function() {
+            if($(this).is(':checked')) {
+                $('#save_competition').prop('disabled', false);
+                $('#error_single_or_team').hide();
+                $('#id_isminime').prop('checked', false);
+                $('#id_isminime').prop('disabled', true);
+                
+                $('#id_gender_0').prop('checked', false);
+                $('#id_gender_0').prop('disabled', true);
+            } else {
+                $('#save_competition').prop('disabled', true);
+                $('#error_single_or_team').show();
+                $('#id_isminime').prop('checked', false);
+                $('#id_isminime').prop('disabled', false);
+            }
+        });
+
+        $('#id_isminime').click(function() {
+            if($(this).is(':checked')){
+                $('#id_ismasters').prop('checked', false);
+                $('#id_ismasters').prop('disabled', true);
+
+                $('#id_gender_0').prop('checked', true);
+                $('#id_gender_0').prop('disabled', false);
+                $('#id_gender_1').prop('checked', false);
+                $('#id_gender_1').prop('disabled', true);
+                $('#id_gender_2').prop('checked', false);
+                $('#id_gender_2').prop('disabled', true);
+            } else {
+                if($('#id_isteam').is(':checked')){
+                    $('#id_ismasters').prop('checked', false);
+                    $('#id_ismasters').prop('disabled', true);
+                } else {
+                    $('#id_ismasters').prop('checked', false);
+                    $('#id_ismasters').prop('disabled', false);
+                }
+
+                $('#id_gender_1').attr('disabled', false);
+                $('#id_gender_2').attr('disabled', false);
+                
+                if($('#single').is(':checked')){
+                    $('#id_gender_0').prop('checked', false);
+                    $('#id_gender_0').prop('disabled', true);
+                    $('#id_gender_1').prop('checked', false);
+                    $('#id_gender_1').prop('disabled', false);
+                    $('#id_gender_2').prop('checked', false);
+                    $('#id_gender_2').prop('disabled', false);
+                }
+            }
+        });
+
+    </script>
+{% endblock %}

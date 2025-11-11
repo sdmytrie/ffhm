@@ -1,0 +1,166 @@
+{% extends "scoresheet/base.html" %}
+{% load i18n static %}
+
+{% block extra_css %}
+<link rel="stylesheet" type="text/css" href="{% static 'scoresheet/css/modules/event.css' %}">
+{% endblock %}
+
+{% block content %}
+{% if competition.has_begun %}
+<div class="accordion m-0" id="accordionCompetitionDetails">
+  <div class="card">
+    <div class="card-header m-0 p-0" id="headingOne">
+      <h2 class="mb-0">
+        <button class="btn btn-info" type="button" data-toggle="collapse" data-target="#collapseOne">
+          Details de la comp&eacute;tition, ajouter un athl&egrave;te, clore la comp&eacute;tition, officiels
+        </button>
+      </h2>
+    </div>
+    <div id="collapseOne" class="collapse {% if not competition.has_begun %} show {% endif %}" data-parent="#accordionCompetitionDetails">
+{% endif %}
+      <div class="card-body m-0 p-0">
+        <div class="row">
+            <div class="col-md-12 event-header">
+                <div class="col-md-2 event-header__item">
+                    {% include "./_competition_title.html" with competition=competition %}
+                    <input type="hidden" id="currentCompetiton" value="{{ competition.id }}"/>
+                    <input type="hidden" id="gender_id" value="{{ competition.gender.id }}"/>
+                </div>
+                <div class="col-auto event-header__item d-print-none m-0 p-0">
+                    {% if perms.scoresheet.add_event %}
+                        {% if not competition.has_begun or user.is_superuser %}
+                            <input type="hidden"
+                                id="currentCompetiton"
+                                value="{{ competition.id }}" />
+                            <input type="hidden"
+                                id="gender_id"
+                                value="{{ competition.gender.id }}" />
+                            <h5>Ajouter un athl&egrave;te</h5>
+                            {% if not competition.is_exceeded or user.is_superuser %}
+                                <input type="text"
+                                    id="concurrentGet"
+                                    autocomplete="off"
+                                    class="form-control" />
+                                <div id="concurrentGetResultList"
+                                    style="display:none; overflow:visible;">
+                                    <select id="concurrentSelect"
+                                            size="8"
+                                            class="form-control">
+                                        <option> --- </option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <div id="concurrent_loader"
+                                        name="concurrent_loader"
+                                        style="display: none;">
+                                        <img src="{% static 'scoresheet/img/ajax-loader.gif' %}"
+                                            style="width: 32px; position: absolute;" />
+                                    </div>
+                                </div>
+                            {% else %}
+                                <div class="alert alert-danger">
+                                    Vous ne pouvez pas ajouter d'athl&egrave;te, la date de la comp&eacute;tition est d&eacute;pass&eacute;e.
+                                    <br>
+                                    Veuillez contacter un administrateur.
+                                </div>
+                            {% endif %}
+                        {% endif %}
+                    {% endif %}
+                    <br>
+                    {% if perms.scoresheet.change_competition and competition.has_ended %}
+                        <a href="{% url 'scoresheet:competition_close' competition.id %}" class="btn">Clore</a>
+                    {% endif %}
+                </div>
+                
+                <div class="col-auto event-header__item">
+                    <table class="table table-condensed table-sm table-bordered table-hover event-leader-datatable" border=1>
+                        <tbody>
+                            <tr>
+                                {% for key, value in leader_dict.items %} <th>
+                                        {% if key.name == "null" %}
+                                            &nbsp;
+                                        {% else %}
+                                            <a href="javascript:" data-toggle="modal" data-target="#modal_{{ key.id }}">
+                                                {{ key.name }}
+                                            </a>
+                                        {% endif %}
+                                    </th>
+                                    <td>
+                                        {{ value.concurrent.firstname }}&nbsp;{{ value.concurrent.lastname }}<br>
+                                        <p style="font-size:10px">{{ value.concurrent.clubName }}</p>
+                                        {% include "../leader/_modal_leader_view.html" with concurrent=value leader=value competition=competition leadertype=key modal=key.id %}
+                                    </td>
+                                    {% if key.view_order == 3 or key.view_order == 6 or key.view_order == 9 or key.view_order == 12 %}
+                                        </tr><tr>
+                                    {% endif %}
+                                {% endfor %}
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+{% if competition.has_begun %}
+   </div>
+  </div>
+</div>
+{% endif %}
+
+
+
+
+
+
+    <div class="row">
+        <div class="col-md-12 event-box">
+            {% if not competition.can_begin %}
+                <div class="warning">
+                    Pour commencer la compétition, il faut saisir un <u>arbitre</u> ou un <u>jury</u>.<br />
+                    <span style="font-size: 12px; font-weight: lighter;">Vous pouvez saisir le
+                        poids de corps et la première barre.</span>
+                </div>
+            {% endif %}
+            {% if competition.visibility or competition.user.profile.region == request.user.profile.region or request.user.is_superuser %}
+                <table id="competitionSet" class="table table-condensed table-sm table-bordered table-hover event-datatable">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>TS</th>
+                            <th>Licence</th>
+                            <th>Nom</th>
+                            <th class="event-datatable__col-md">AN</th>
+                            <th class="event-datatable__col-md">Club</th>
+                            <th class="event-datatable__col-md">NAT</th>
+                            <th>P.C.</th>
+                            <th style="text-align: center;">1</th>
+                            <th style="text-align: center;">2</th>
+                            <th style="text-align: center;">3</th>
+                            <th style="text-align: center;">ARR</th>
+                            <th style="text-align: center;">1</th>
+                            <th style="text-align: center;">2</th>
+                            <th style="text-align: center;">3</th>
+                            <th style="text-align: center;">EP-J</th>
+                            <th style="text-align: center;">TOTAL</th>
+                            <th class="event-datatable__col-md" style="text-align: center;">S&eacute;rie</th>
+                            <th class="event-datatable__col-md" style="text-align: center;">Cat&eacute;gorie</th>
+                            <th class="event-datatable__col-md" style="text-align: center;">IWF</th>
+                            <th>&nbsp;</th>
+                        </tr>
+                    </thead>
+                    {% for event in event_list %}
+                        {% include "../event/_event_datatable.html" with event=event has_begin=has_begin has_ended=has_ended %}
+                    {% endfor %}
+                </table>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}
+
+
+
+{% block javascript %}
+    {{ block.super }}
+
+    <script  src="{% static 'scoresheet/js/competition.js' %}"></script>
+
+{% endblock %}

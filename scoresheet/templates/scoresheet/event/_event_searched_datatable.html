@@ -1,0 +1,83 @@
+{% load i18n static %}
+
+{% if event.competition.closed is True %}
+    <tr class="{% cycle 'row1' 'row2' %}" {% if not onlyteam %}{% ifchanged event.weightcategory %}style="border-top: 2px solid black;"{% endifchanged %}{% endif %}>
+        <td class="event-datatable__col-sm">
+            {{ event.concurrent.licence }}
+        </td>
+        <td>
+            <a href="{% url 'scoresheet:search' event.concurrent.id event.competition.season.id %}">
+                {{ event.concurrent.lastname.upper }}&nbsp;{{ event.concurrent.firstname.capitalize }}
+            </a>
+        </td>
+        <td style="white-space: normal;">
+            {% if event.competition.visibility or event.competition.user.profile.region == request.user.profile.region or request.user.is_superuser %}
+                {% if event.competition.isteam %}
+                    <a href="{% url 'scoresheet:team_competition_view' event.competition.id %}">{{ event.competition.name }}</a>
+                {% else %}
+                    <a href="{% url 'scoresheet:competition_view' event.competition.id %}">{{ event.competition.name }}</a>
+                {% endif %}
+            {% else %}
+                {{ event.competition.name }}
+            {% endif %}
+            <br>
+            {{ event.competition.start_date | date:"D d M Y" }}
+        </td>
+        <td class="event-datatable__col-md">
+            {{ event.clubName }}<br />
+            <font size="-3">{{ event.concurrent.clubReg }}</font>
+        </td>
+        <td class="event-datatable__col-md">
+            {{ event.concurrent.country }}
+        </td>
+        <td>
+            {{ event.weight }}
+        </td>
+
+        {% for attempt in event.getARRAttemptSet %}
+            <td class="event-datatable__col-md" style="text-align: center;">
+                <div class="attempt_{{ attempt.validate }}">
+                    <strong>{%if attempt.validate == 2%}-{%endif%}{{ attempt.value }}</strong>
+                </div>
+            </td>
+        {% endfor %}
+        <td style="text-align: center;">
+            <strong>{{ event.totalSet.0 }}</strong>
+        </td>
+        {% for attempt in event.getEPJAttemptSet %}
+            <td class="event-datatable__col-md" style="text-align: center;">
+                <div class="attempt_{{ attempt.validate }}">
+                    <strong>{%if attempt.validate == 2%}-{%endif%}{{ attempt.value }}</strong>
+                </div>
+            </td>
+        {% endfor %}
+
+        <td style="text-align: center;">
+            <strong>{{ event.totalSet.1 }}</strong>
+        </td>
+        <td style="width: 50px; text-align:center;">
+            <strong>{{ event.total }}</strong>
+        </td>
+        <td class="event-datatable__col-sm" style="text-align: center;">
+            {% if event.minimumweightcategory.name and not competition.isminime %}
+                {{ event.minimumweightcategory.name }}
+            {% else %}
+                N.C.
+            {% endif %}
+        </td>
+        <td class="event-datatable__col-sm" nowrap style="text-align: center;">
+            {% if event.competition.ismasters %}
+                {{ event.agecategory }} {{ event.categorie }} {{ event.weightcategory.weight }}
+            {% else %}
+                {% if 'W' in event.agecategory.name or 'M' in event.agecategory.name %}
+                    {{ event.agecategory.name }} {{ event.categorie }} {{ event.weightcategory.weight }}
+                {% else %}
+                    {{ event.agecategory.name | slice:"3" }} {{ event.categorie }} {{ event.weightcategory.weight }}
+                {% endif %}
+            {% endif %}
+        </td>
+        <td class="event-datatable__col-md" style="text-align: center;">
+            {{ event.iwf }}
+        </td>
+    </tr>
+{% endif %}

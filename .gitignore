@@ -1,0 +1,12 @@
+.DS_Store
+nohup.out
+venv
+__pycache__
+.vscode
+.idea
+ffhm/settings/production.py
+ffhm/static
+eburo.py
+exalto/settings/settings.py
+.env
+wallpapers/

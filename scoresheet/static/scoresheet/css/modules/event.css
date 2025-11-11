@@ -1,0 +1,80 @@
+.event-box {
+  background-color: rgba(117, 190, 218, 0.5);
+}
+
+.event-header {
+  font-size: 0.8rem;
+  background-color: rgba(117, 190, 218, 0.75);
+  white-space: nowrap;
+  padding: 1rem 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.event-header__item {
+  padding: 0rem 2rem;
+  font-size: 0.8rem;
+}
+
+.event-header__item a {
+  color: white !important;
+  background-color: #21618c;
+}
+
+.event-header__item a:hover,
+.event-header__item a:active {
+  color: #21618c !important;
+  background-color: white;
+}
+
+.event-datatable {
+  font-size: 0.8rem;
+  background-color: white;
+  white-space: nowrap;
+}
+
+.event-datatable__col-sm {
+  display: none;
+}
+
+.event-datatable__col-md {
+  display: none;
+}
+
+@media (min-width: 40rem) {
+  .event-datatable__col-sm {
+    display: table-cell;
+  }
+}
+
+@media (min-width: 70rem) {
+  .event-datatable__col-md {
+    display: table-cell;
+  }
+}
+
+@media print {
+  @page {
+    size: landscape;
+  }
+
+  .event-datatable__col-md {
+    display: table-cell;
+  }
+
+  .event-datatable__col-sm {
+    display: table-cell;
+  }
+}
+
+.event-leader-datatable {
+  font-size: 0.8rem;
+  background-color: white;
+  white-space: nowrap;
+}
+
+.event-leader-datatable a {
+  color: #21618c !important;
+  background-color: white;
+}

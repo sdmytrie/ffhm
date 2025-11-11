@@ -1,0 +1,136 @@
+{% extends "scoresheet/base.html" %}
+{% load i18n static %}
+
+{% block extra_css %}
+<link rel="stylesheet" type="text/css" href="{% static 'scoresheet/css/modules/event.css' %}">
+{% endblock %}
+
+{% block content %}
+{{ user_agent }}
+<div id="allCompetitions">
+    <div class="row">
+        <div class="col-md-12 event-header">
+            <div class="event-header__item">
+                {% include "./_competition_title.html" with competition=competition user_agent=user_agent %}
+            </div>
+            {% if user_agent == "tablet" %}
+                <div class="event-header__item d-print-none">
+                    {% if user.is_superuser and all_done is True %}
+                        <a href="{% url 'scoresheet:competition_open' competition.id %}" class="btn">Ouvrir</a>
+                    {% endif %}
+                    <a href="javascript:" id="printButton" class="btn">Print</a>
+                </div>
+                <div class="event-header__item">
+                    <table class="table table-condensed table-sm table-bordered table-hover event-leader-datatable">
+                        <tbody>
+                            <tr>
+                                {% for key, value in leader_dict.items %}
+                                    <th style="text-align: left;">
+                                        {% if key.name == "null" %}
+                                            &nbsp;
+                                        {% else %}
+                                            {{ key.name }}
+                                        {% endif %}
+                                    </th>
+                                    <td style="border-right: solid 1 blue;">
+                                        {{ value.concurrent.firstname }}&nbsp;{{ value.concurrent.lastname }}<br>
+                                        <p style="font-size:10px">{{ value.concurrent.clubName }}</p>
+                                    </td>
+                                    {% if key.view_order == 3 or key.view_order == 6 or key.view_order == 9 or key.view_order == 12 %}
+                                        </tr><tr>
+                                    {% endif %}
+                                {% endfor %}
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12 event-box">
+            {% if competition.visibility or competition.user.profile.region == request.user.profile.region or request.user.is_superuser %}
+                {% for gender, agecategory_list in event_list.items %}
+                    {% for agecategory, weightcategory_list in agecategory_list.items %}
+                        <table id="mycompetitionSet_{{ agecategory.id }}" class="table table-condensed table-sm table-bordered table-hover event-datatable">
+                            <thead class="thead-dark">
+                                <tr>
+                                    {% if user_agent == "tablet" %}
+                                        <th>Licence</th>
+                                    {% endif %}
+                                    <th>Nom</th>
+                                    <th>P.C.</th>
+                                    {% if user_agent == "tablet" %}
+                                        <th style="text-align: center;">ARR</th>
+                                        <th style="text-align: center;">EPJ</th>
+                                    {% endif %}
+                                    <th style="text-align: center;">TOTAL</th>
+                                    <th style="text-align: center;">Cat.</th>
+                                    {% if user_agent == "tablet" %}
+                                        <th style="text-align: center;">IWF</th>
+                                    {% endif %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for weightcategory, concurrent_list in weightcategory_list.items %}
+                                    {% for concurrent, event in concurrent_list.items %}
+                                        {% include "../event/_mobile_event_closed_datatable.html" with event=event user_agent=user_agent %}
+                                    {% endfor %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        <br />
+                    {% endfor %}
+                {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascript %}
+    {{ block.super }}
+
+    <script type="text/javascript">
+        $('#printButton').on('click', function(){
+            $('#allCompetitions').printThis();
+        });
+    </script>
+    <script>
+        // console.log($('table[id*="mycompetitionSet"]'))
+        current_tables = Array()
+        $('table[id*="mycompetitionSet"]').each(function(e, table){
+            current_tables[e] = $('#' + table.id).DataTable({
+                dom: 'Bplrti',
+                aLengthMenu: [[10, 20, 40, -1], [10, 20, 40, "All"]],
+                iDisplayLength: -1,
+                language: {
+                    paginate: {
+                        previous: "&lt;",
+                        next: "&gt;"
+                    }
+                }
+            });
+
+            thClone = $('#' + table.id + ' thead tr').clone().appendTo('#' + table.id + ' thead')
+            $('#' + table.id + ' thead tr:eq(1) th').each(function(i) {
+                if(i != 6 && i != 7 && i != 8 && i != 10 && i != 11 && i != 12) {
+                  $(this).html('<div class="input-group input-group-sm mb-1"><input id="col-input-' + i + '" type="text" class="form-control ps-1 pe-1" /></div>')
+
+                  $('input', this).on('keyup change', function() {
+                      if (current_tables[e].column(i).search() !== this.value) {
+                          current_tables[e]
+                              .column(i)
+                              .search(this.value, true, false)
+                              .draw()
+                      }
+                  })
+                } else {
+                    $(this).html("")
+                }
+            })
+            thClone.find('th').attr('data-dt-order', 'disable')
+            thClone.find('th').attr('class', '')
+        })
+    </script>
+{% endblock %}

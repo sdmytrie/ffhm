@@ -1,0 +1,89 @@
+{% extends "scoresheet/base.html" %}
+{% load i18n static %}
+
+{% block extra_css %}
+<link rel="stylesheet" type="text/css" href="{% static 'scoresheet/css/modules/season.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'scoresheet/css/modules/weightcategory.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 weightcategory-box">
+        <div class="season">
+            {% if request.user.is_superuser %}
+                {% include "scoresheet/season/_season_select.html" with current_season=season.id season_url_value=season_url_value %}
+            {% else %}
+                <strong>{{ season.name }}</strong>
+            {% endif %}
+            {{ scoresheet.check_season }}
+        </div>
+        <strong>Masculin</strong>
+        <table class="table table-condensed table-sm table-bordered table-hover weightcategory-datatable" >
+            <tbody>
+            {% for agecategory in m_agecategory_list %}
+                <tr class="{% cycle 'row1' 'row2' %}">
+                    <th style="background: #79aec8;">
+                        {% if perms.scoresheet.change_agecategory %}
+                            <a href="{% url 'admin:api_agecategory_change' agecategory.id %}?next={% url 'scoresheet:weightcategory_view' season.id %}" 
+                                style="color: white">
+                                {{ agecategory.name }}
+                            </a>
+                        {% else %}
+                            {{ agecategory.name }}
+                        {% endif %}
+                    </th>
+                    {% if forloop.counter > 1 %}
+                        <td>&nbsp</td>
+                    {% endif %}
+                    {% if forloop.counter > 3 %}
+                        <td>&nbsp</td>
+                    {% endif %}
+                    {% for weightcategory in agecategory.weightcategory_set.all %}
+                        <td>
+                            {{ weightcategory.weight }}
+                        </td>
+                    {% endfor %}
+                <tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        <strong>F&eacute;minin</strong>
+        <table class="table table-condensed table-sm table-bordered table-hover weightcategory-datatable">
+            <tbody>
+            {% for agecategory in f_agecategory_list %}
+                <tr class="{% cycle 'row1' 'row2' %}">
+                    <th style="background: #79aec8;">
+                        {% if perms.scoresheet.change_agecategory %}
+                            <a href="{% url 'admin:api_agecategory_change' agecategory.id %}?next={% url 'scoresheet:weightcategory_view' season.id %}" 
+                                style="color: white">
+                                {{ agecategory.name }}
+                            </a>
+                        {% else %}
+                            <font style="color: white">{{ agecategory.name }}</font>
+                        {% endif %}
+                    </th>
+                    {% if forloop.counter > 1 %}
+                        <td>&nbsp</td>
+                    {% endif %}
+                    {% if forloop.counter > 3 %}
+                        <td>&nbsp</td>
+                    {% endif %}
+                    {% for weightcategory in agecategory.weightcategory_set.all %}
+                        <td>
+                            {{ weightcategory.weight }}
+                        </td>
+                    {% endfor %}
+                <tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascript %}
+    {{ block.super }}
+
+    <script  src="{% static 'scoresheet/js/competition.js' %}"></script>
+    
+{% endblock %}

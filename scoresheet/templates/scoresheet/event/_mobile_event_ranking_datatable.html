@@ -1,0 +1,50 @@
+{% load i18n static %}
+
+<tr>
+    <td>
+        {{ forloop.counter }}
+    </td>
+    {% if not user_agent == "mobile" %}
+        <td>
+            {{ event.concurrent.licence }}
+        </td>
+    {% endif %}
+    <td style="white-space: normal">
+        {{ event.concurrent.lastname.upper }}&nbsp;{{ event.concurrent.firstname.capitalize }}
+    </td>
+    <td>
+        {{ event.weight }}
+    </td>
+    {% if not user_agent == "mobile" %}
+        <td style="text-align: center;">
+            <strong>{{ event.totalSet.0 }}</strong>
+        </td>
+
+        <td style="text-align: center;">
+            <strong>{{ event.totalSet.1 }}</strong>
+        </td>
+    {% endif %}
+    <td style="width: 50px; text-align:center;">
+        <strong>{{ event.total }}</strong>
+    </td>
+    {% if not user_agent == "mobile" %}
+        <td class="event-datatable__col-sm" style="text-align: center;">
+            {% if event.minimumweightcategory.name and not competition.isminime %}
+                {{ event.minimumweightcategory.name }}
+            {% else %}
+                N.C.
+            {% endif %}
+        </td>
+        <td class="event-datatable__col-sm" nowrap style="text-align: center;">
+            {% if event.competition.ismasters %}
+                {{ event.agecategory }} {{ event.categorie }}&nbsp;{{ event.weightcategory.weight }}
+            {% else %}
+                {% if 'W' in event.agecategory.name or 'M' in event.agecategory.name %}
+                    {{ event.agecategory.name }} {{ event.categorie }}&nbsp;{{ event.weightcategory.weight }}
+                {% else %}
+                    {{ event.agecategory.name | slice:"3" }} {{ event.categorie }}&nbsp;{{ event.weightcategory.weight }}
+                {% endif %}
+            {% endif %}
+        </td>
+    {% endif %}
+</tr>
