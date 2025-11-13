@@ -1,15 +1,17 @@
 from collections import OrderedDict
+from copy import deepcopy
 import math
 from operator import attrgetter
 
 from django.db.models import Avg, FloatField, Max, Min, Q
 from django.db.models.functions import Cast
+from icecream import ic
 from openpyxl import Workbook
 from openpyxl.styles import Color, Font, PatternFill, colors
 from openpyxl.writer.excel import save_virtual_workbook
-import pymongo
 
 from api.models import *
+import pymongo
 
 
 def provisional_iwf(event):
@@ -108,8 +110,7 @@ def sortClosedEventListOld(competition):
     )
 
     seniorEventList = (
-        Event.objects.annotate(myweight=Cast(
-            "weightcategory__id", FloatField()))
+        Event.objects.annotate(myweight=Cast("weightcategory__id", FloatField()))
         .filter(competition_id=competition.id, agecategory__name="SENIOR")
         .order_by("-concurrent__gender", "myweight", "-total")
     )
@@ -264,12 +265,10 @@ def sortEventListOld(eventList):
         eventList = sorted(eventList, key=attrgetter("iwf"), reverse=True)
     else:
         myList = sorted(
-            attemptList, key=attrgetter(
-                "value", "rank", "distance", "event.draw")
+            attemptList, key=attrgetter("value", "rank", "distance", "event.draw")
         )
         gbList = sorted(
-            garbageList, key=attrgetter(
-                "value", "distance", "event.draw", "rank")
+            garbageList, key=attrgetter("value", "distance", "event.draw", "rank")
         )
 
         for event in eventList:
@@ -299,8 +298,7 @@ def sortEventTeamList(eventList):
     for event in eventList:
         if event.concurrent.gender_id == 2:
             continue
-        femaleAttemptCount += event.attempt_set.filter(
-            validate=0, value__gt=0).count()
+        femaleAttemptCount += event.attempt_set.filter(validate=0, value__gt=0).count()
 
     for event in eventList:
         if femaleAttemptCount > 0 and event.concurrent.gender.id == 2:
@@ -322,18 +320,15 @@ def sortEventTeamList(eventList):
 
     myList = sorted(
         attemptList,
-        key=attrgetter("value", "rank", "distance",
-                       "event.team.draw", "event.id"),
+        key=attrgetter("value", "rank", "distance", "event.team.draw", "event.id"),
     )
     gbList = sorted(
         garbageList,
-        key=attrgetter("value", "distance", "event.draw",
-                       "rank", "event.team.draw"),
+        key=attrgetter("value", "distance", "event.draw", "rank", "event.team.draw"),
     )
 
     for event in eventList:
-        myList = myList + \
-            list(event.attempt_set.filter(validate=0, value=0, rank=1))
+        myList = myList + list(event.attempt_set.filter(validate=0, value=0, rank=1))
 
     eventList = []
     for attempt in myList:
@@ -354,8 +349,7 @@ def sortEventTeamList(eventList):
 #
 def addAuthorization(model, authorization, user):
     if user.is_authenticated:
-        content_type = ContentType.objects.get(
-            app_label="scoresheet", model=model)
+        content_type = ContentType.objects.get(app_label="scoresheet", model=model)
         permission = Permission.objects.get(
             codename=authorization, content_type_id=content_type.id
         )
@@ -364,8 +358,7 @@ def addAuthorization(model, authorization, user):
 
 def removeAuthorization(model, authorization, user):
     if user.is_authenticated:
-        content_type = ContentType.objects.get(
-            app_label="scoresheet", model=model)
+        content_type = ContentType.objects.get(app_label="scoresheet", model=model)
         permission = Permission.objects.get(
             codename=authorization, content_type_id=content_type.id
         )
@@ -455,10 +448,8 @@ def excelize(event_list, title):
                         event.weight,
                     ]
                     for attempt in event.getARRAttemptSet:
-                        row.append(((-1) ** (attempt.validate + 1))
-                                   * attempt.value)
-                        cell = worksheet.cell(
-                            row=row_num, column=6 + attempt.rank)
+                        row.append(((-1) ** (attempt.validate + 1)) * attempt.value)
+                        cell = worksheet.cell(row=row_num, column=6 + attempt.rank)
                         color = "00FF00"
                         if attempt.validate == 2:
                             color = "FF0000"
@@ -470,10 +461,8 @@ def excelize(event_list, title):
                     row.append(event.totalSet[0])
 
                     for attempt in event.getEPJAttemptSet:
-                        row.append(((-1) ** (attempt.validate + 1))
-                                   * attempt.value)
-                        cell = worksheet.cell(
-                            row=row_num, column=10 + attempt.rank)
+                        row.append(((-1) ** (attempt.validate + 1)) * attempt.value)
+                        cell = worksheet.cell(row=row_num, column=10 + attempt.rank)
                         color = "00FF00"
                         if attempt.validate == 2:
                             color = "FF0000"
@@ -501,8 +490,7 @@ def excelize(event_list, title):
                             "W" in event.agecategory.name
                             or "M" in event.agecategory.name
                         ):
-                            categorie = event.concurrent.gender.name[:1].upper(
-                            )
+                            categorie = event.concurrent.gender.name[:1].upper()
                             row.append(
                                 "MASTERS "
                                 + categorie
@@ -510,8 +498,7 @@ def excelize(event_list, title):
                                 + event.weightcategory.weight
                             )
                         else:
-                            categorie = event.concurrent.gender.name[:1].upper(
-                            )
+                            categorie = event.concurrent.gender.name[:1].upper()
                             if event.weightcategory:
                                 row.append(
                                     event.agecategory.name[:3]
@@ -522,8 +509,7 @@ def excelize(event_list, title):
                                 )
                             else:
                                 row.append(
-                                    event.agecategory.name[:3] +
-                                    " " + categorie + " "
+                                    event.agecategory.name[:3] + " " + categorie + " "
                                 )
 
                     row.append(event.iwf)
@@ -543,8 +529,7 @@ def excelize(event_list, title):
 
 def get_clubs_from_region(region):
     collection = pymongo.MongoClient("mongo", 27017).exalto.concurrent
-    concurrents = list(collection.find(
-        {"concurrent.result.club.region.nom": region}))
+    concurrents = list(collection.find({"concurrent.result.club.region.nom": region}))
     clubs = []
     for concurrent in concurrents:
         if concurrent["concurrent"]["result"]["club"]["nom"] not in clubs:
@@ -556,8 +541,113 @@ def get_clubs_from_region(region):
 def get_region_by_concurrent(concurrent):
     collection = pymongo.MongoClient("mongo", 27017).exalto.concurrent
     current = collection.find_one(
-        {"concurrent.result.code_adherent": concurrent.licence})
+        {"concurrent.result.code_adherent": concurrent.licence}
+    )
 
     if current:
-        return current.get("concurrent", {}).get("result", {}).get("club", {}).get("region", {}).get("nom", "")
+        return (
+            current.get("concurrent", {})
+            .get("result", {})
+            .get("club", {})
+            .get("region", {})
+            .get("nom", "")
+        )
     return ""
+
+
+class ManageRecords:
+    def get_events(self):
+        event_list = list(
+            Event.objects.filter(
+                competition__isrecordeligible=True,
+                competition__closed=True,
+                competition__isminime=False,
+                concurrent__country="FR",
+            ).all()
+        )
+        event_list.sort(key=lambda x: x.updated_at)
+
+        return event_list
+
+    def set_weightcategory(self, event: Event) -> Event:
+        current_weightcategoryList = []
+        current_weightcategory = None
+        max_weightcategory = None
+        current_season = list(Season.objects.order_by("-id").all())
+
+        if event.competition.season.pk == current_season[0].pk:
+            return event
+
+        current_agecategory = Agecategory.objects.get(
+            name=event.agecategory.name,
+            season=current_season[0],
+            gender=event.competition.gender,
+        )
+        if float(event.weight) == 0.0 or event.agecategory.name == "U10":
+            current_weightcategory = None
+        else:
+            weightcategoryList = list(
+                Weightcategory.objects.filter(agecategory_id=current_agecategory.pk)
+            )
+            for weightcategory in weightcategoryList:
+                if ">" in weightcategory.weight:
+                    max_weightcategory = weightcategory
+                    continue
+                current_weightcategoryList.append(weightcategory)
+
+            current_weightcategoryList.sort(key=lambda w: float(w.weight))
+            current = weightcategoryList[0]
+
+            for weightcategory in current_weightcategoryList:
+                if float(event.weight) <= float(current.weight):
+                    current_weightcategory = current
+                    break
+                current = weightcategory
+
+            current_max_weightcategory = current_weightcategoryList[-1]
+            if not current_weightcategory:
+                current_weightcategory = current_max_weightcategory
+
+            if float(event.weight) > float(current_max_weightcategory.weight):
+                current_weightcategory = max_weightcategory
+        event.weightcategory = current_weightcategory
+
+        return event
+
+    def get_last_agecategory(self, event: Event) -> Event | None:
+        age = (
+            event.competition.season.end_date.year - event.concurrent.date_of_birth.year
+        )
+        current_season = list(Season.objects.order_by("-id").all())
+
+        agecategoryList = list(
+            Agecategory.objects.filter(
+                season_id=event.competition.season.id,
+                gender_id=event.concurrent.gender_id,
+            )
+            .exclude(name__startswith="M")
+            .exclude(name__startswith="W")
+            .order_by("agemin")
+        )
+
+        current = agecategoryList[0]
+        new_event = None
+        existing_agecategory = ["SENIOR", "U20", "U17", "U15"]
+        for agecategory in agecategoryList:
+            if age - 1 <= current.agemax:
+                if (
+                    event.agecategory.name != current.name
+                    and (
+                        (event.updated_at.year - current_season[0].start_date.year) * 12
+                        + event.updated_at.month
+                        - current_season[0].start_date.month
+                        < 4
+                    )
+                    and current.name in existing_agecategory
+                ):
+                    new_event = deepcopy(event)
+                    new_event.agecategory = current
+                break
+            current = agecategory
+
+        return new_event
