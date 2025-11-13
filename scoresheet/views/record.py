@@ -106,7 +106,7 @@ def record(request, season_id="0"):
                                 buffer["ep_j"]["is_standard"]
                                 and record_event.event.totalSet[1]
                                 >= buffer["ep_j"]["value"]
-                            ) or record_event.event.totalSet[1] > buffer["arr"][
+                            ) or record_event.event.totalSet[1] > buffer["ep_j"][
                                 "value"
                             ]:
                                 buffer["ep_j"] = {
@@ -118,7 +118,7 @@ def record(request, season_id="0"):
                             if (
                                 buffer["total"]["is_standard"]
                                 and record_event.event.total >= buffer["total"]["value"]
-                            ) or record_event.event.total > buffer["arr"]["value"]:
+                            ) or record_event.event.total > buffer["total"]["value"]:
                                 buffer["total"] = {
                                     "value": record_event.event.total,
                                     "concurrent": record_event.event.concurrent,
