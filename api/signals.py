@@ -1,12 +1,13 @@
 import os
 
 from django.contrib.auth.models import User
+from django.core.cache import cache
 from django.db.models.signals import post_save, pre_delete, pre_save
 from django.dispatch import receiver
 from icecream import ic
-import pymongo
 
 from PIL import Image
+import pymongo
 
 from .models import *
 
@@ -230,3 +231,8 @@ def save_user_profile(sender, instance, **kwargs):
         instance.profile.club = "Inconnu"
         # instance.profile.region = "Inconnu"
     instance.profile.save()
+
+
+@receiver([post_save, post_delete], sender=Record)
+def invalidate_record_cache(sender, instance, **kwargs):
+    cache.delete_pattern("*record_list*")

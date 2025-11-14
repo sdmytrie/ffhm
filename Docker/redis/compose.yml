@@ -1,0 +1,15 @@
+services:
+  redis:
+    image: redis
+    restart: always
+    ports:
+      - 6379:6379
+    environment:
+      TZ: Europe/Paris
+    networks:
+      - ffhm-network
+
+networks:
+  ffhm-network:
+    driver: bridge
+    name: ffhm-network

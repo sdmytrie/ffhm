@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.urls import reverse
+from django.views.decorators.cache import cache_page
 
 from api.models import (
     Concurrent,
@@ -18,6 +19,7 @@ def get_records(age, gender):
     pass
 
 
+@cache_page(60 * 60 * 24, key_prefix="record_list")
 def record(request, season_id="0"):
     page = "record"
 
