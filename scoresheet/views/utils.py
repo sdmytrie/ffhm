@@ -637,17 +637,11 @@ class ManageRecords:
             if age - 1 <= current.agemax:
                 if (
                     event.agecategory.name != current.name
-                    and (
-                        (event.updated_at.year - current_season[0].start_date.year) * 12
-                        + event.updated_at.month
-                        - current_season[0].start_date.month
-                        < 4
-                    )
+                    and event.updated_at.year == current_season[0].start_date.year
                     and current.name in existing_agecategory
                 ):
                     new_event = deepcopy(event)
                     new_event.agecategory = current
                 break
             current = agecategory
-
         return new_event

@@ -77,14 +77,18 @@ class Command(BaseCommand):
         #    record.delete()
 
         event_list = []
-        buffer_event_list = map(
-            record_manager.set_weightcategory, record_manager.get_events()
-        )
-        for event in buffer_event_list:
-            event_list.append(event)
+        buffer_event_list = []
+        # buffer_event_list = map(
+        #    record_manager.set_weightcategory, record_manager.get_events()
+        # )
+        for event in record_manager.get_events():
+            buffer_event_list.append(event)
             new_event = record_manager.get_last_agecategory(event)
             if new_event:
-                event_list.append(new_event)
+                buffer_event_list.append(new_event)
+
+        event_list = list(map(record_manager.set_weightcategory, buffer_event_list))
+        event_list.sort(key=lambda x: x.updated_at)
 
         for event in event_list:
             arr, ep_j = event.totalSet
