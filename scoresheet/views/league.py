@@ -6,26 +6,29 @@ from api.models import Profile, Competition, Event, Gender
 
 @csrf_exempt
 def league_get_by_name(request):
-    """get club by name"""
+    """get league by name"""
 
     motif = request.POST.get("motif")
-    league_list = (
+    page = int(request.POST.get("page", "0"))
+    count = (
         Profile.objects.filter(region__icontains=motif)
         .order_by("region")
         .values("region")
         .distinct()
+        .count()
     )
+    league_list = (
+        Profile.objects.filter(region__icontains=motif)
+        .order_by("region")
+        .values("region")
+        .distinct()[page * 10 : page * 10 + 10]
+    )
+    context = {
+        "league_list": league_list,
+        "page": page,
+        "motif": motif,
+        "count": count,
+        "total": (page + 1) * 10,
+    }
 
-    data = '<django-objects version="1.0">'
-    for league in list(league_list):
-        data = data + '<object pk="' + str(league.get("region")) + '">'
-        data = (
-            data
-            + '<field name="club" type="CharField">'
-            + league.get("region")
-            + "</field>"
-        )
-        data = data + "</object>"
-    data = data + "</django-objects>"
-
-    return render(request, "scoresheet/league/league_json.html", locals())
+    return render(request, "scoresheet/partials/league_search_table.html", context)

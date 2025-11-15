@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django_htmx",
     "widget_tweaks",
     "rest_framework",
     "corsheaders",
@@ -63,6 +64,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "django_user_agents.middleware.UserAgentMiddleware",
+    "django_htmx.middleware.HtmxMiddleware",
     # 'debug_toolbar.middleware.DebugToolbarMiddleware',
 ]
 

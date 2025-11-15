@@ -17,49 +17,69 @@
   <div class="main-menu">
       <h3 class="main-menu__item">Recherche</h3>
   </div>
-  <form action="{% url 'scoresheet:search' %}" method="POST">
-      {% csrf_token %}
       <div class="form-row search-box pb-2">
           <div class="col">
-              <label for="concurrentGet">
-                  <strong>Athlète</strong>
-              </label>
-              <input type="text" name="concurrentGet" id="concurrentGet" class="form-control" autocomplete="off">
-              <div id="concurrentGetResultList" style="display: none; overflow:visible;">
-                  <select id="concurrentSelect" size="5" class="form-control">
-                      <option> --- </option>
-                  </select>
-              </div>
+             <label for="input-search-concurrent">
+                 <strong>Athlète</strong>
+             </label>
+             <input type="search" 
+                    id="input-search-concurrent"
+                    class="form-control" 
+                    name="motif"
+                    placeholder="Recherche par prénom, nom ou licence"
+                    autocomplete="off"
+                    hx-on:keyup="this.value.length<=0 && $('#concurrent-search-table').empty()"
+                    hx-post="{% url 'scoresheet:concurrent_get_by_name' %}"
+                    hx-trigger="keyup[target.value.length > 1] delay:500ms"
+                    hx-target="#concurrent-search-table" />
+             <div id="concurrent-search-table"></div>
           </div>
           <div class="col">
-              <label for="clubGet">
-                  <strong>Club</strong>
-              </label>
-              <input type="text" name="clubGet" id="clubGet" class="form-control" autocomplete="off">
-              <div id="clubGetResultList" style="display: none; overflow:visible;">
-                  <select id="clubSelect" size="5" class="form-control">
-                      <option> --- </option>
-                  </select>
-              </div>
+             <label for="input-search-club">
+                 <strong>Club</strong>
+             </label>
+             <input type="search" 
+                    id="input-search-club"
+                    class="form-control" 
+                    name="motif"
+                    placeholder="Recherche par nom"
+                    autocomplete="off"
+                    hx-on:keyup="this.value.length==0 && $('#club-search-table').empty()"
+                    hx-post="{% url 'scoresheet:club_get_by_name' %}"
+                    hx-trigger="keyup[target.value.length > 1] delay:500ms"
+                    hx-target="#club-search-table" />
+             <div id="club-search-table"></div>
           </div>
           <div class="col">
-             <label for="leagueGet">
+             <label for="input-search-league">
                  <strong>Ligue</strong>
              </label>
-             <input type="text" name="leagueGet" id="leagueGet" class="form-control" autocomplete="off">
-             <div id="leagueGetResultList" style="display: none; overflow:visible;">
-                 <select id="leagueSelect" size="5" class="form-control">
-                     <option> --- </option>
-                 </select>
-             </div>
+             <input type="search" 
+                    id="input-search-league"
+                    class="form-control" 
+                    name="motif"
+                    placeholder="Recherche par nom"
+                    autocomplete="off"
+                    hx-on:keyup="this.value.length==0 && $('#league-search-table').empty()"
+                    hx-post="{% url 'scoresheet:league_get_by_name' %}"
+                    hx-trigger="keyup[target.value.length > 1] delay:500ms"
+                    hx-target="#league-search-table" />
+             <div id="league-search-table"></div>
           </div>
       </div>
-  </form>
 </div>
+
+<div id="wait">
+  <div class="spinner-border text-primary" role="status">
+    <span class="sr-only">Loading...</span>
+  </div>
+  <span class="ml-3 pt-1">Chargement en cours ...</span>
+</div>
+
 {% if concurrent or club or league %}
 <div class="row">
     <div class="col-md-12 event-box">
-        <span style="color: white">
+        <span>
             {% if concurrent %}
                 <h3>{{ concurrent.firstname }}&nbsp;{{ concurrent.lastname }}</h3>
                 {{ concurrent.date_of_birth|date:"d/m/Y" }}
@@ -109,6 +129,7 @@
     {{ block.super }}
 
     <script>
+        $("#wait").hide()
         $("input:radio[name=currentSeason]").change(function() {
             value = $("input:radio[name=currentSeason]:checked").val();
             location.href = value;
@@ -127,6 +148,7 @@
                 }
             }
         });
+
 
         thClone = $('#competitionSet thead tr').clone().appendTo('#competitionSet thead')
         $('#competitionSet thead tr:eq(1) th').each(function(i) {
@@ -147,182 +169,6 @@
         })
         thClone.find('th').attr('data-dt-order', 'disable')
         thClone.find('th').attr('class', '')
-
-        var globalTimeout = null;
-        $("#concurrentGet").on("keyup", function(event) {
-            event.preventDefault();
-            if (globalTimeout != null) {
-                clearTimeout(globalTimeout);
-            }
-        
-            if (event.which == 27) {
-                $("#concurrentGetResultList").hide();
-                $("#concurrentGet").val('')
-            }
-
-            globalTimeout = setTimeout(function() {
-                globalTimeout = null;
-                var request = $.ajax({
-                    url: "/scoresheet/concurrent/search",
-                    type: "post",
-                    data: 'motif=' + $("#concurrentGet").val()
-                });
-
-                request.done(function(msg) {
-                    if ($("#concurrentGet").val().length > 0) {
-                        $("#concurrentGetResultList").show();
-                    } else {
-                        $("#concurrentGetResultList").hide();
-                        $("#concurrentSelect")
-                            .children()
-                            .remove();
-                    }
-
-                    $("#concurrentSelect")
-                        .children()
-                        .remove();
-                    $(msg)
-                        .find("object")
-                        .each(function() {
-                            var concurrent = "";
-                            $(this)
-                                .find("field")
-                                .each(function() {
-                                    concurrent += " " + $(this).text();
-                                });
-                        $("#concurrentSelect").append(
-                            new Option(concurrent, $(this).attr("pk"))
-                        );
-                        var id = $(this).attr("pk");
-                    });
-                });
-
-                request.fail(function(jqXHR, textStatus) {
-                    alert("Request failed: " + textStatus);
-                });
-            }, 400);
-        });
-
-         $("#clubGet").on("keyup", function(event) {
-            event.preventDefault();
-            if (globalTimeout != null) {
-                clearTimeout(globalTimeout);
-            }
-        
-            if (event.which == 27) {
-                $("#clubGetResultList").hide();
-                $("#clubGet").val('')
-            }
-
-            globalTimeout = setTimeout(function() {
-                globalTimeout = null;
-                var request = $.ajax({
-                    url: "/scoresheet/club/search",
-                    type: "post",
-                    data: 'motif=' + $("#clubGet").val()
-                });
-
-                request.done(function(msg) {
-                    if ($("#clubGet").val().length > 0) {
-                        $("#clubGetResultList").show();
-                    } else {
-                        $("#clubGetResultList").hide();
-                        $("#clubSelect")
-                            .children()
-                            .remove();
-                    }
-
-                    $("#clubSelect")
-                        .children()
-                        .remove();
-                    $(msg)
-                        .find("object")
-                        .each(function() {
-                            var concurrent = "";
-                            $(this)
-                                .find("field")
-                                .each(function() {
-                                    concurrent += " " + $(this).text();
-                                });
-                        $("#clubSelect").append(
-                            new Option(concurrent, $(this).attr("pk"))
-                        );
-                        var id = $(this).attr("pk");
-                    });
-                });
-
-                request.fail(function(jqXHR, textStatus) {
-                    alert("Request failed: " + textStatus);
-                });
-            }, 400);
-        });
-
-         $("#leagueGet").on("keyup", function(event) {
-            event.preventDefault();
-            if (globalTimeout != null) {
-                clearTimeout(globalTimeout);
-            }
-        
-            if (event.which == 27) {
-                $("#leagueGetResultList").hide();
-                $("#clubGet").val('')
-            }
-
-            globalTimeout = setTimeout(function() {
-                globalTimeout = null;
-                var request = $.ajax({
-                    url: "/scoresheet/league/search",
-                    type: "post",
-                    data: 'motif=' + $("#leagueGet").val()
-                });
-
-                request.done(function(msg) {
-                    if ($("#leagueGet").val().length > 0) {
-                        $("#leagueGetResultList").show();
-                    } else {
-                        $("#leagueGetResultList").hide();
-                        $("#leagueSelect")
-                            .children()
-                            .remove();
-                    }
-
-                    $("#leagueSelect")
-                        .children()
-                        .remove();
-                    $(msg)
-                        .find("object")
-                        .each(function() {
-                            var concurrent = "";
-                            $(this)
-                                .find("field")
-                                .each(function() {
-                                    concurrent += " " + $(this).text();
-                                });
-                        $("#leagueSelect").append(
-                            new Option(concurrent, $(this).attr("pk"))
-                        );
-                        var id = $(this).attr("pk");
-                    });
-                });
-
-                request.fail(function(jqXHR, textStatus) {
-                    alert("Request failed: " + textStatus);
-                });
-            }, 400);
-        });
-
-        $("#concurrentSelect").change(function() {
-            var id = $(this).val();
-            window.location = '/scoresheet/search/' + id + '/{{ season.id }}';
-        });       
-        $("#clubSelect").change(function() {
-            var id = $(this).val();
-            window.location = '/scoresheet/search-by-club/' + id + '/0' + '/{{ season.id }}';
-        });       
-        $("#leagueSelect").change(function() {
-            var id = $(this).val();
-            window.location = '/scoresheet/search-by-club/0/' + id + '/{{ season.id }}';
-        });       
 
     </script>
 {% endblock %}

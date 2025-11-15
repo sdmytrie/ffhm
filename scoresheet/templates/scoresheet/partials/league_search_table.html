@@ -1,0 +1,37 @@
+<div class="p-2">
+  <div id="league-list" style="background-color: white">
+    {% for league in league_list %} 
+    <p class="p-0 m-0 pl-1">
+      <a
+        href="{% url 'scoresheet:search_by_club' 0 league.region %}"
+        class="p-0 m-0"
+        hx-on:click="$('#wait').show()"
+      >
+        {{ league.region }}
+      </a>
+    </p>
+    {% empty %}
+    <p>Aucune ligue</p>
+    {% endfor %}
+  </div>
+  <div class="row">
+    <div class="col text-center">
+      <form
+        class="btn btn-info m-0 p-0"
+        id="concurrent-form"
+        hx-post="{% url 'scoresheet:club_get_by_name' %}"
+        hx-trigger="click"
+        hx-swap="beforeend"
+        hx-select="#league-list"
+        hx-target="#league-list"
+      >
+        <input type="hidden" name="motif" value="{{ motif }}" />
+        <input type="hidden" name="page" value="{{ page|add:1 }}" />
+        {% if count > 1 %}
+        <p class="m-0">{{ count }} ligues</p>
+        <button class="btn btn-success btn-sm m-1">>>></button>
+        {% endif %}
+      </form>
+    </div>
+  </div>
+</div>

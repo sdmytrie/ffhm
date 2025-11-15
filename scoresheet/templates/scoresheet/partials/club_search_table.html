@@ -1,0 +1,36 @@
+<div class="p-2">
+  <div id="club-list" style="background-color: white">
+    {% for club in club_list %}
+    <p class="p-0 m-0 pl-1">
+      <a href="{% url 'scoresheet:search_by_club' club.clubName 0 %}"
+        class="p-0 m-0"
+        hx-on:click="$('#wait').show()"
+      >
+        {{ club.clubName }}
+      </a>
+    </p>
+    {% empty %}
+    <p>Aucun club</p>
+    {% endfor %}
+  </div>
+  <div class="row">
+    <div class="col text-center">
+      <form
+        class="btn btn-info m-0 p-0"
+        id="club-form"
+        hx-post="{% url 'scoresheet:club_get_by_name' %}"
+        hx-trigger="click"
+        hx-swap="beforeend"
+        hx-select="#club-list"
+        hx-target="#club-list"
+      >
+        <input type="hidden" name="motif" value="{{ motif }}" />
+        <input type="hidden" name="page" value="{{ page|add:1 }}" />
+        {% if count > 1 %}
+        <p class="m-0">{{ count }} clubs</p>
+        <button class="btn btn-success btn-sm m-1">>>></button>
+        {% endif %}
+      </form>
+    </div>
+  </div>
+</div>

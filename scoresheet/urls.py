@@ -35,7 +35,7 @@ urlpatterns = [
     path(
         "league/search",
         scoresheet.views.league.league_get_by_name,
-        name="club_get_by_name",
+        name="league_get_by_name",
     ),
     path(
         "competition/add/<season_id>",
@@ -178,8 +178,11 @@ urlpatterns = [
     path("search/", scoresheet.views.search.search, name="search"),
     path("search/<season_id>", scoresheet.views.search.search, name="search"),
     path("search/<concurrent_id>/", scoresheet.views.search.search, name="search"),
-    path("search/<concurrent_id>/<season_id>",
-         scoresheet.views.search.search, name="search"),
+    path(
+        "search/<concurrent_id>/<season_id>",
+        scoresheet.views.search.search,
+        name="search",
+    ),
     path(
         "search-by-club/<club_name>/<league_name>/",
         scoresheet.views.search.search_by_club,

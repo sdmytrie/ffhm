@@ -1,7 +1,9 @@
 {% load i18n static %}
+{% load django_htmx %}
 <!DOCTYPE html>
 <html lang="{{ LANGUAGE_CODE|default:'fr-fr' }}" style="font-size:15px">
 <head>
+  {% htmx_script %}
 	<meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -25,7 +27,7 @@
     
 </head>
 
-<body>
+<body hx-headers='{"x-csrftoken": "{{ csrf_token }}"}'>
 	{% block background %}
 		<!-- <div class="background"></div> -->
         <div class="d-print-none">

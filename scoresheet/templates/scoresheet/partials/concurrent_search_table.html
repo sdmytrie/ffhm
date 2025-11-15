@@ -1,0 +1,34 @@
+<div class="p-2">
+  <div id="concurrent-list" style="background-color: white;">
+    {% for concurrent in concurrent_list %} 
+      <p class="p-0 m-0 pl-1">
+      <a href="{% url 'scoresheet:search' concurrent.id %}" 
+        class="p-0 m-0"
+        hx-on:click="$('#wait').show()">
+        {{ concurrent.licence }} {{ concurrent.firstname}} {{ concurrent.lastname }}
+      </a>
+      </p>
+    {% empty %} 
+      <p> Aucun athlète </p>
+    {% endfor %}
+  </div>
+  <div class="row">
+    <div class="col text-center">
+      <form class="btn btn-info m-0 p-0"
+            id="concurrent-form"
+            hx-post="{% url 'scoresheet:concurrent_get_by_name' %}"
+            hx-trigger="click"
+            hx-swap="beforeend"
+            hx-select="#concurrent-list"
+            hx-target="#concurrent-list"
+       >
+        <input type="hidden" name="motif" value="{{ motif }}" />
+        <input type="hidden" name="page" value="{{ page|add:1 }}" />
+        {% if count > 1 %}
+          <p class="m-0"> {{ count }} athlètes </p>
+          <button class="btn btn-success btn-sm m-1"> >>> </button>
+        {% endif %}
+      </form>
+    </div>
+  </div>
+</div>

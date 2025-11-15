@@ -3,12 +3,14 @@ CONCURRENT
 """
 
 import re
-import pymongo
+
 from django.contrib.auth.decorators import login_required
+from django.db.models import Q
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 
 from api.models import Competition, Concurrent, Event, Gender
+import pymongo
 
 
 @login_required
@@ -150,16 +152,29 @@ def concurrent_get(request, licence, current_competition, gender_id):
     return render(request, "scoresheet/concurrent/concurrent_json.html", locals())
 
 
-@csrf_exempt
 def concurrent_get_by_name(request):
     """get concurrent by name"""
 
     motif = request.POST.get("motif")
-    concurrent_list = (
-        Concurrent.objects.filter(lastname__icontains=motif)
-        | Concurrent.objects.filter(firstname__icontains=motif)
-        | Concurrent.objects.filter(licence__icontains=motif)
-    )
+    page = int(request.POST.get("page", "0"))
+    count = concurrent_list = Concurrent.objects.filter(
+        Q(lastname__icontains=motif)
+        | Q(firstname__icontains=motif)
+        | Q(licence__icontains=motif)
+    ).count()
+    concurrent_list = Concurrent.objects.filter(
+        Q(lastname__icontains=motif)
+        | Q(firstname__icontains=motif)
+        | Q(licence__icontains=motif)
+    ).order_by("lastname")[page * 10 : page * 10 + 10]
+    context = {
+        "concurrent_list": concurrent_list,
+        "page": page,
+        "motif": motif,
+        "count": count,
+        "total": (page + 1) * 10,
+    }
+    return render(request, "scoresheet/partials/concurrent_search_table.html", context)
 
     data = '<django-objects version="1.0">'
     for concurrent in concurrent_list:
