@@ -69,6 +69,7 @@ def leader_add(request, concurrent_id, competition_id, leadertype_id):
 
 @login_required
 def leader_get(request, licence, current_competition, current_leadertype_id):
+    print(current_leadertype_id)
     """get Leader"""
     collection = pymongo.MongoClient("mongo", 27017).exalto.concurrent
 
@@ -97,8 +98,10 @@ def leader_get(request, licence, current_competition, current_leadertype_id):
             }
         },
     ]
-    if int(current_leadertype_id) < 4 or (
-        int(current_leadertype_id) >= 9 and int(current_leadertype_id) <= 11
+    if (
+        int(current_leadertype_id) < 4
+        or (int(current_leadertype_id) >= 9 and int(current_leadertype_id) <= 11)
+        or int(current_leadertype_id) == 6
     ):
         pipeline = [
             {"$match": {"concurrent.result.licence.type.code": "A"}},
