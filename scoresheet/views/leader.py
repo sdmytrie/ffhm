@@ -102,6 +102,7 @@ def leader_get(request, licence, current_competition, current_leadertype_id):
         int(current_leadertype_id) < 4
         or (int(current_leadertype_id) >= 9 and int(current_leadertype_id) <= 11)
         or int(current_leadertype_id) == 6
+        or int(current_leadertype_id) == 5
     ):
         pipeline = [
             {"$match": {"concurrent.result.licence.type.code": "A"}},
