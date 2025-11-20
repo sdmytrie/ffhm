@@ -73,8 +73,8 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         record_manager = ManageRecords()
         record_list = Record.objects.all()
-        # for record in record_list:
-        #    record.delete()
+        for record in record_list:
+            record.delete()
 
         event_list = []
         buffer_event_list = []
