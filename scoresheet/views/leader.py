@@ -4,12 +4,12 @@ LEADER
 
 import re
 
-import pymongo
 from django.contrib.auth.decorators import login_required, permission_required
 from django.db.models import Q
 from django.shortcuts import redirect, render
+import pymongo
 
-from api.models import Competition, Concurrent, Gender, Leader, Leadertype, Event
+from api.models import Competition, Concurrent, Event, Gender, Leader, Leadertype
 
 
 @permission_required("scoresheet.change_competition")
@@ -69,7 +69,6 @@ def leader_add(request, concurrent_id, competition_id, leadertype_id):
 
 @login_required
 def leader_get(request, licence, current_competition, current_leadertype_id):
-    print(current_leadertype_id)
     """get Leader"""
     collection = pymongo.MongoClient("mongo", 27017).exalto.concurrent
 
@@ -85,6 +84,7 @@ def leader_get(request, licence, current_competition, current_leadertype_id):
 
     concurrent_list = []
     pipeline = [
+        {"$match": {"concurrent.result.saison": competition.season.end_date.year}},
         {
             "$match": {
                 "$or": [
@@ -106,6 +106,7 @@ def leader_get(request, licence, current_competition, current_leadertype_id):
     ):
         pipeline = [
             {"$match": {"concurrent.result.licence.type.code": "A"}},
+            {"$match": {"concurrent.result.saison": competition.season.end_date.year}},
             {
                 "$match": {
                     "$or": [
