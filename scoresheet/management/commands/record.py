@@ -94,33 +94,38 @@ class Command(BaseCommand):
             arr, ep_j = event.totalSet
             total = arr + ep_j
 
-            current_record = RecordStandard.objects.get(
-                agecategory=event.agecategory.name,
-                weightcategory=event.weightcategory.weight,
-                gender__pk=event.concurrent.gender.pk,
-            )
-            if arr >= current_record.arr and not self.record_exists(event, "arr"):
-                new_record = Record()
-                new_record.event = event
-                new_record.is_current = True
-                new_record.arr = True
-                new_record.save()
-            if ep_j >= current_record.ep_j and not self.record_exists(event, "ep_j"):
-                new_record = Record()
-                new_record.event = event
-                new_record.is_current = True
-                new_record.ep_j = True
-                new_record.save()
-            if (
-                total >= current_record.arr + current_record.ep_j
-                and not self.record_exists(event, "total")
-            ):
-                new_record = Record()
-                new_record.event = event
-                new_record.is_current = True
-                new_record.total = True
-                new_record.save()
-            new_record = None
+            try:
+                current_record = RecordStandard.objects.get(
+                    agecategory=event.agecategory.name,
+                    weightcategory=event.weightcategory.weight,
+                    gender__pk=event.concurrent.gender.pk,
+                )
+                if arr >= current_record.arr and not self.record_exists(event, "arr"):
+                    new_record = Record()
+                    new_record.event = event
+                    new_record.is_current = True
+                    new_record.arr = True
+                    new_record.save()
+                if ep_j >= current_record.ep_j and not self.record_exists(
+                    event, "ep_j"
+                ):
+                    new_record = Record()
+                    new_record.event = event
+                    new_record.is_current = True
+                    new_record.ep_j = True
+                    new_record.save()
+                if (
+                    total >= current_record.arr + current_record.ep_j
+                    and not self.record_exists(event, "total")
+                ):
+                    new_record = Record()
+                    new_record.event = event
+                    new_record.is_current = True
+                    new_record.total = True
+                    new_record.save()
+                new_record = None
+            except Exception as e:
+                pass
             ## try:
             current_records = list(
                 Record.objects.filter(
