@@ -2,14 +2,12 @@ from django.core.management.base import BaseCommand
 
 from api.models import (
     Agecategory,
-    Attempt,
     Concurrent,
     Event,
     Record,
     RecordStandard,
     Season,
     Weightcategory,
-    Gender,
 )
 from icecream import ic
 from scoresheet.views.utils import ManageRecords
@@ -72,112 +70,7 @@ class Command(BaseCommand):
                 return True
         return False
 
-    def get_last_agecategory_by_season(self, name, gender):
-        return Agecategory.objects.get(
-            season=self.get_current_season(), name=name, gender=gender
-        )
-
-    def get_current_season(self):
-        season_list = Season.objects.all().order_by("-end_date")
-        return season_list[0]
-
-    def get_gender(self, name):
-        return Gender.objects.get(name=name)
-
     def handle(self, *args, **options):
-        age_categories = ["U15", "U17", "U20", "SENIOR"]
-        for gender in ["male", "female"]:
-            for attempt_type in ["ARR", "EP-J", "TOTAL"]:
-                for age in age_categories:
-
-                    current_agecategory = self.get_last_agecategory_by_season(
-                        age, self.get_gender(gender)
-                    )
-                    for weightcategory in current_agecategory.weightcategory_set.all():
-                        print(gender, age, weightcategory)
-                        if attempt_type == "TOTAL":
-                            attempt_all = Event.objects.filter(
-                                agecategory=current_agecategory,
-                                weightcategory=weightcategory,
-                                competition__isrecordeligible=True,
-                                competition__gender=self.get_gender(gender),
-                            ).order_by("-total", "updated_at")
-                            for buffer_attempt in attempt_all:
-                                buffer_attempt.weightcategory = self.get_weightcategory(
-                                    buffer_attempt
-                                )
-                        else:
-                            attempt_all = Attempt.objects.filter(
-                                event__agecategory=current_agecategory,
-                                # event__weightcategory=weightcategory,
-                                event__competition__isrecordeligible=True,
-                                event__competition__gender=self.get_gender(gender),
-                                name=attempt_type,
-                                validate=1,
-                            ).order_by("-value", "updated_at")
-                            for buffer_attempt in attempt_all:
-                                buffer_attempt.weightcategory = self.get_weightcategory(
-                                    buffer_attempt.event
-                                )
-                            attempt_all = list(
-                                filter(
-                                    lambda x: x.weightcategory.weight
-                                    == weightcategory.weight,
-                                    attempt_all,
-                                )
-                            )
-                        record_standard_all = RecordStandard.objects.filter(
-                            weightcategory=weightcategory.weight,
-                            agecategory__in=age_categories[age_categories.index(age) :],
-                            gender=self.get_gender(gender),
-                        )
-                        try:
-                            for record_standard in record_standard_all:
-                                record_standard_value = {
-                                    "ARR": record_standard.arr,
-                                    "EP-J": record_standard.ep_j,
-                                    "TOTAL": record_standard.arr + record_standard.ep_j,
-                                }
-                                if attempt_type == "TOTAL":
-                                    attempt_value = attempt_all[0].total
-                                else:
-                                    attempt_value = attempt_all[0].value
-                                if attempt_value > record_standard_value[attempt_type]:
-                                    arr = False
-                                    ep_j = False
-                                    total = False
-                                    if attempt_type == "ARR":
-                                        arr = True
-                                    elif attempt_type == "EP-J":
-                                        ep_j = True
-                                    else:
-                                        total = True
-                                    try:
-                                        record = Record.objects.get(
-                                            event__agecategory=current_agecategory,
-                                            event__weightcategory=weightcategory,
-                                            event__competition__gender=self.get_gender(
-                                                gender
-                                            ),
-                                            arr=arr,
-                                            ep_j=ep_j,
-                                            total=total,
-                                        )
-                                    except Record.DoesNotExist:
-                                        record = Record()
-                                    record.arr = arr
-                                    record.ep_j = ep_j
-                                    record.total = total
-                                    record.is_current = True
-                                    if attempt_type == "TOTAL":
-                                        record.event = attempt_all[0]
-                                    else:
-                                        record.event = attempt_all[0].event
-                                    record.save()
-                        except Exception as e:
-                            ic(f"error: {e}")
-        return
-
         record_manager = ManageRecords()
         record_list = Record.objects.all()
         for record in record_list:
