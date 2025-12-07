@@ -98,7 +98,7 @@ class Command(BaseCommand):
                         if attempt_type == "TOTAL":
                             attempt_all = Event.objects.filter(
                                 agecategory=current_agecategory,
-                                weightcategory=weightcategory,
+                                # weightcategory=weightcategory,
                                 competition__isrecordeligible=True,
                                 competition__gender=self.get_gender(gender),
                                 concurrent__country="FR",
