@@ -101,6 +101,7 @@ class Command(BaseCommand):
                                 weightcategory=weightcategory,
                                 competition__isrecordeligible=True,
                                 competition__gender=self.get_gender(gender),
+                                concurrent__country="FR",
                             ).order_by("-total", "updated_at")
                             for buffer_attempt in attempt_all:
                                 buffer_attempt.weightcategory = self.get_weightcategory(
@@ -112,6 +113,7 @@ class Command(BaseCommand):
                                 # event__weightcategory=weightcategory,
                                 event__competition__isrecordeligible=True,
                                 event__competition__gender=self.get_gender(gender),
+                                event__concurrent__country="FR",
                                 name=attempt_type,
                                 validate=1,
                             ).order_by("-value", "updated_at")
