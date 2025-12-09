@@ -128,7 +128,7 @@ class Command(BaseCommand):
                 pass
             ## try:
             current_records = list(
-                Record.objects.filter(
+                Record.objects.prefetch_related("event").filter(
                     event__agecategory__name=event.agecategory.name,
                     event__weightcategory__weight=event.weightcategory.weight,
                     event__concurrent__gender__pk=event.concurrent.gender.pk,

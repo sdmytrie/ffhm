@@ -569,6 +569,21 @@ class ManageRecords:
 
         return event_list
 
+    def get_attempts(self):
+        attempt_list = list(
+            Attempt.objects.prefetch_related("event")
+            .filter(
+                event__competition__isrecordeligible=True,
+                event__competition__closed=True,
+                event__competition__isminime=False,
+                event__concurrent__country="FR",
+            )
+            .all()
+        )
+        attempt_list.sort(key=lambda x: x.updated_at)
+
+        return attempt_list
+
     def set_weightcategory(self, event: Event) -> Event:
         current_weightcategoryList = []
         current_weightcategory = None
