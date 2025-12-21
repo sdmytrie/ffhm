@@ -44,11 +44,11 @@
                       <table style="width: 100%">
                         <tr>
                           <td style="width: 90%">
-                            {% if record.arr.is_standard %}
-                              {{ record.arr.concurrent }}
+                            {% if not record.arr.event %}
+                              standard
                             {% else %}
-                              <a href="{% url 'scoresheet:search' record.arr.concurrent.id %}">
-                                  {{ record.arr.concurrent.lastname.upper }}&nbsp;{{ record.arr.concurrent.firstname.capitalize }}
+                              <a href="{% url 'scoresheet:search' record.arr.event.concurrent.id %}">
+                                  {{ record.arr.event.concurrent.lastname.upper }}&nbsp;{{ record.arr.event.concurrent.firstname.capitalize }}
                               </a>
                             {% endif %}
                           </td>
@@ -62,11 +62,11 @@
                       <table style="width: 100%">
                         <tr>
                           <td style="width: 90%">
-                            {% if record.ep_j.is_standard %}
-                              {{ record.ep_j.concurrent }}
+                            {% if not record.ep_j.event %}
+                              standard
                             {% else %}
-                              <a href="{% url 'scoresheet:search' record.ep_j.concurrent.id %}">
-                                  {{ record.ep_j.concurrent.lastname.upper }}&nbsp;{{ record.ep_j.concurrent.firstname.capitalize }}
+                              <a href="{% url 'scoresheet:search' record.ep_j.event.concurrent.id %}">
+                                  {{ record.ep_j.event.concurrent.lastname.upper }}&nbsp;{{ record.ep_j.event.concurrent.firstname.capitalize }}
                               </a>
                             {% endif %}
                           </td>
@@ -80,11 +80,11 @@
                       <table style="width: 100%">
                         <tr>
                           <td style="width: 90%">
-                            {% if record.total.is_standard %}
-                              {{ record.total.concurrent }}
+                            {% if not record.total.event %}
+                              standard
                             {% else %}
-                              <a href="{% url 'scoresheet:search' record.total.concurrent.id %}">
-                                  {{ record.total.concurrent.lastname.upper }}&nbsp;{{ record.total.concurrent.firstname.capitalize }}
+                              <a href="{% url 'scoresheet:search' record.total.event.concurrent.id %}">
+                                  {{ record.total.event.concurrent.lastname.upper }}&nbsp;{{ record.total.event.concurrent.firstname.capitalize }}
                               </a>
                             {% endif %}
                           </td>

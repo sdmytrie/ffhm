@@ -29,10 +29,24 @@ class competitionkindAdmin(admin.ModelAdmin):
 
 
 class CompetitionAdmin(admin.ModelAdmin):
-    list_display = ("name", "season", "visibility",
-                    "gender", "kind", "isteam", "place", "isrecordeligible")
-    list_filter = ("season", "visibility",
-                   "gender", "isteam", "isrecordeligible", "kind")
+    list_display = (
+        "name",
+        "season",
+        "visibility",
+        "gender",
+        "kind",
+        "isteam",
+        "place",
+        "isrecordeligible",
+    )
+    list_filter = (
+        "season",
+        "visibility",
+        "gender",
+        "isteam",
+        "isrecordeligible",
+        "kind",
+    )
     date_hierarchy = "updated_at"
     ordering = (
         "name",
@@ -161,8 +175,7 @@ class AgecategoryAdmin(admin.ModelAdmin):
         # Fieldset 1 : meta-info (titre, auteur…)
         (
             "Général",
-            {"fields": ("season", "surname", "name",
-                        "gender", ("agemin", "agemax"))},
+            {"fields": ("season", "surname", "name", "gender", ("agemin", "agemax"))},
         ),
         # ('Catégories de poids', {
         #    inlines = [WeightcategoryInline]
@@ -230,54 +243,71 @@ class WallpaperAdmin(admin.ModelAdmin):
 
 
 class RecordstandardAdmin(admin.ModelAdmin):
-    list_display = ("id", "gender", "agecategory",
-                    "weightcategory", "arr", "ep_j", "total")
+    list_display = (
+        "id",
+        "gender",
+        "agecategory",
+        "weightcategory",
+        "arr",
+        "ep_j",
+        "total",
+    )
     ordering = ("agecategory", "gender", "arr", "ep_j")
-    list_filter = ("gender", "agecategory", )
+    list_filter = (
+        "gender",
+        "agecategory",
+    )
 
 
 class RecordAdmin(admin.ModelAdmin):
-    list_display = ("id", "full_name", "attempts", "attempts_total", "gender", "arr", "ep_j",
-                    "total", "is_current")
-    # ordering = ("agecategory", "gender", "arr", "ep_j")
-    # list_filter = ("gender", "agecategory", )
+    list_display = (
+        "id",
+        "gender",
+        "weightcategory",
+        "agecategory",
+        "full_name",
+        "kind",
+        "value",
+        "is_current",
+    )
 
     @admin.display(description="Full name")
     def full_name(self, instance):
-        return f"{instance.event.concurrent.firstname} {instance.event.concurrent.lastname}"
+        full_name = "standard"
+        if instance.event:
+            full_name = f"{instance.event.concurrent.firstname} {instance.event.concurrent.lastname}"
 
-    @admin.display(description="Total")
-    def attempts_total(self, instance):
-        return instance.event.total
+        return full_name
 
     @admin.display(description="Genre")
     def gender(self, instance):
-        return instance.event.concurrent.gender
-
-    @admin.display(description="Attempts")
-    def attempts(self, instance):
-        attempt_list = list(instance.event.attempt_set.all())
-        result = ""
-        arr = ""
-        ep_j = ""
-        for attempt in attempt_list:
-            if attempt.name == "ARR":
-                if attempt.validate == 1:
-                    arr = str(attempt.value)
-            if attempt.name == "EP-J":
-                if attempt.validate == 1:
-                    ep_j = str(attempt.value)
-        result = arr + " || " + ep_j
-        return result
+        return instance.gender.verbose_name
 
 
 class EventAdmin(admin.ModelAdmin):
-    list_display = ("id", "competition__name", "eligible", "date", "full_name",
-                    "age", "attempts", "total", "closed", "season")
-    ordering = ("-competition__season", )
-    list_filter = ("competition__season", "competition__isrecordeligible",
-                   "competition__closed", "agecategory__name", )
-    search_fields = ("concurrent__lastname", "competition__name", )
+    list_display = (
+        "id",
+        "competition__name",
+        "eligible",
+        "date",
+        "full_name",
+        "age",
+        "attempts",
+        "total",
+        "closed",
+        "season",
+    )
+    ordering = ("-competition__season",)
+    list_filter = (
+        "competition__season",
+        "competition__isrecordeligible",
+        "competition__closed",
+        "agecategory__name",
+    )
+    search_fields = (
+        "concurrent__lastname",
+        "competition__name",
+    )
 
     @admin.display(description="Full name")
     def full_name(self, instance):

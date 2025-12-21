@@ -19,7 +19,7 @@ def get_records(age, gender):
     pass
 
 
-@cache_page(60 * 60 * 24, key_prefix="record_list")
+# @cache_page(60 * 60 * 24, key_prefix="record_list")
 def record(request, season_id="0"):
     page = "record"
 
@@ -51,23 +51,32 @@ def record(request, season_id="0"):
             )
             for weight in weight_categories:
                 buffer = {"weight": weight}
-                record_standard = RecordStandard.objects.get(
-                    weightcategory=weight, agecategory=key
+                record_arr = Record.objects.get(
+                    weightcategory=weight,
+                    agecategory=key,
+                    gender__value=gender_id,
+                    kind="ARR",
                 )
-                buffer["arr"] = {
-                    "value": record_standard.arr,
-                    "concurrent": "standard",
-                    "is_standard": True,
-                }
+                record_ep_j = Record.objects.get(
+                    weightcategory=weight,
+                    agecategory=key,
+                    gender__value=gender_id,
+                    kind="EP-J",
+                )
+                record_total = Record.objects.get(
+                    weightcategory=weight,
+                    agecategory=key,
+                    gender__value=gender_id,
+                    kind="TOTAL",
+                )
+                buffer["arr"] = {"value": record_arr.value, "event": record_arr.event}
                 buffer["ep_j"] = {
-                    "value": record_standard.ep_j,
-                    "concurrent": "standard",
-                    "is_standard": True,
+                    "value": record_ep_j.value,
+                    "event": record_ep_j.event,
                 }
                 buffer["total"] = {
-                    "value": record_standard.total,
-                    "concurrent": "standard",
-                    "is_standard": True,
+                    "value": record_total.value,
+                    "event": record_total.event,
                 }
 
                 all_ages = ["SENIOR", "U20", "U17", "U15"]
@@ -81,68 +90,68 @@ def record(request, season_id="0"):
                         is_current=True,
                     )
                 )
-                if records_event:
-                    for record_event in records_event:
-                        if (
-                            record_manager.set_weightcategory(
-                                record_event.event
-                            ).weightcategory.weight
-                            != weight.weight
-                        ):
-                            continue
-                        if record_event.arr:
-                            if (
-                                buffer["arr"]["is_standard"]
-                                and record_event.event.totalSet[0]
-                                >= buffer["arr"]["value"]
-                            ) or record_event.event.totalSet[0] > buffer["arr"][
-                                "value"
-                            ]:
-                                buffer["arr"] = {
-                                    "value": record_event.event.totalSet[0],
-                                    "concurrent": record_event.event.concurrent,
-                                    "is_standard": False,
-                                }
-                        if record_event.ep_j:
-                            if (
-                                buffer["ep_j"]["is_standard"]
-                                and record_event.event.totalSet[1]
-                                >= buffer["ep_j"]["value"]
-                            ) or record_event.event.totalSet[1] > buffer["ep_j"][
-                                "value"
-                            ]:
-                                buffer["ep_j"] = {
-                                    "value": record_event.event.totalSet[1],
-                                    "concurrent": record_event.event.concurrent,
-                                    "is_standard": False,
-                                }
-                        if record_event.total:
-                            if (
-                                buffer["total"]["is_standard"]
-                                and record_event.event.total >= buffer["total"]["value"]
-                            ) or record_event.event.total > buffer["total"]["value"]:
-                                buffer["total"] = {
-                                    "value": record_event.event.total,
-                                    "concurrent": record_event.event.concurrent,
-                                    "is_standard": False,
-                                }
-                else:
-                    records_event = None
-                    buffer["arr"] = {
-                        "value": record_standard.arr,
-                        "concurrent": "standard",
-                        "is_standard": True,
-                    }
-                    buffer["ep_j"] = {
-                        "value": record_standard.ep_j,
-                        "concurrent": "standard",
-                        "is_standard": True,
-                    }
-                    buffer["total"] = {
-                        "value": record_standard.total,
-                        "concurrent": "standard",
-                        "is_standard": True,
-                    }
+                # if records_event:
+                #     for record_event in records_event:
+                #         if (
+                #             record_manager.set_weightcategory(
+                #                 record_event.event
+                #             ).weightcategory.weight
+                #             != weight.weight
+                #         ):
+                #             continue
+                #         if record_event.arr:
+                #             if (
+                #                 buffer["arr"]["is_standard"]
+                #                 and record_event.event.totalSet[0]
+                #                 >= buffer["arr"]["value"]
+                #             ) or record_event.event.totalSet[0] > buffer["arr"][
+                #                 "value"
+                #             ]:
+                #                 buffer["arr"] = {
+                #                     "value": record_event.event.totalSet[0],
+                #                     "concurrent": record_event.event.concurrent,
+                #                     "is_standard": False,
+                #                 }
+                #         if record_event.ep_j:
+                #             if (
+                #                 buffer["ep_j"]["is_standard"]
+                #                 and record_event.event.totalSet[1]
+                #                 >= buffer["ep_j"]["value"]
+                #             ) or record_event.event.totalSet[1] > buffer["ep_j"][
+                #                 "value"
+                #             ]:
+                #                 buffer["ep_j"] = {
+                #                     "value": record_event.event.totalSet[1],
+                #                     "concurrent": record_event.event.concurrent,
+                #                     "is_standard": False,
+                #                 }
+                #         if record_event.total:
+                #             if (
+                #                 buffer["total"]["is_standard"]
+                #                 and record_event.event.total >= buffer["total"]["value"]
+                #             ) or record_event.event.total > buffer["total"]["value"]:
+                #                 buffer["total"] = {
+                #                     "value": record_event.event.total,
+                #                     "concurrent": record_event.event.concurrent,
+                #                     "is_standard": False,
+                #                 }
+                # else:
+                #     records_event = None
+                #     buffer["arr"] = {
+                #         "value": record_standard.arr,
+                #         "concurrent": "standard",
+                #         "is_standard": True,
+                #     }
+                #     buffer["ep_j"] = {
+                #         "value": record_standard.ep_j,
+                #         "concurrent": "standard",
+                #         "is_standard": True,
+                #     }
+                #     buffer["total"] = {
+                #         "value": record_standard.total,
+                #         "concurrent": "standard",
+                #         "is_standard": True,
+                #     }
                 records[key][gender_name].append(buffer)
 
         # weight_categories = list(

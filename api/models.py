@@ -86,8 +86,7 @@ class Competition(Post):
         self._has_ended = False
 
     name = models.CharField(max_length=255, verbose_name="Nom")
-    season = models.ForeignKey(
-        Season, on_delete=models.CASCADE, verbose_name="Saison")
+    season = models.ForeignKey(Season, on_delete=models.CASCADE, verbose_name="Saison")
     isteam = models.BooleanField(default=False, verbose_name="Equipe")
     ismasters = models.BooleanField(default=False, verbose_name="Masters")
     isminime = models.BooleanField(default=False, verbose_name="Minime")
@@ -96,20 +95,19 @@ class Competition(Post):
     )
     place = models.CharField(max_length=255, verbose_name="Lieu")
     address = models.CharField(max_length=255, verbose_name="Adresse")
-    gender = models.ForeignKey(
-        Gender, on_delete=models.CASCADE, verbose_name="Genre")
+    gender = models.ForeignKey(Gender, on_delete=models.CASCADE, verbose_name="Genre")
     troop = models.IntegerField(verbose_name="Nombre de participants max")
     countevents = models.IntegerField(
         default=0, verbose_name="Nombre de participants inscrits"
     )
     start_date = models.DateField(null=True)
     end_date = models.DateField(null=True)
-    user = models.ForeignKey(
-        User, on_delete=models.CASCADE, verbose_name="User")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="User")
     closed = models.BooleanField(default=False, verbose_name="Clos")
     visibility = models.BooleanField(default=True, verbose_name="Visibilité")
     isrecordeligible = models.BooleanField(
-        default=False, verbose_name="Eligible aux records")
+        default=False, verbose_name="Eligible aux records"
+    )
 
     class Meta:
         db_table = "competition"
@@ -139,14 +137,12 @@ class Competition(Post):
 
     @property
     def has_begun(self):
-        self._has_begun = any(
-            [event.has_begun for event in self.event_set.all()])
+        self._has_begun = any([event.has_begun for event in self.event_set.all()])
         return self._has_begun
 
     @property
     def has_ended(self):
-        self._has_ended = all(
-            [event.has_ended for event in self.event_set.all()])
+        self._has_ended = all([event.has_ended for event in self.event_set.all()])
         return self._has_ended
 
     @property
@@ -159,14 +155,11 @@ class Competition(Post):
 
 class Agecategory(Post):
     name = models.CharField(max_length=255, verbose_name="Nom")
-    surname = models.CharField(
-        max_length=255, default="", verbose_name="Détail")
-    gender = models.ForeignKey(
-        Gender, on_delete=models.CASCADE, verbose_name="Genre")
+    surname = models.CharField(max_length=255, default="", verbose_name="Détail")
+    gender = models.ForeignKey(Gender, on_delete=models.CASCADE, verbose_name="Genre")
     agemin = models.IntegerField(verbose_name="Age min.")
     agemax = models.IntegerField(verbose_name="Age max.")
-    season = models.ForeignKey(
-        Season, on_delete=models.CASCADE, verbose_name="Saison")
+    season = models.ForeignKey(Season, on_delete=models.CASCADE, verbose_name="Saison")
 
     class Meta:
         db_table = "agecategory"
@@ -194,8 +187,7 @@ class Weightcategory(Post):
 
     def changeform_link(self):
         if self.id:
-            changeform_url = reverse(
-                "admin:api_weightcategory_change", args=(self.id,))
+            changeform_url = reverse("admin:api_weightcategory_change", args=(self.id,))
             return mark_safe('<a href="%s">Séries</a>' % changeform_url)
         return ""
 
@@ -317,8 +309,7 @@ class Event(Post):
     weightcategory = models.ForeignKey(
         Weightcategory, null=True, on_delete=models.CASCADE
     )
-    agecategory = models.ForeignKey(
-        Agecategory, null=True, on_delete=models.CASCADE)
+    agecategory = models.ForeignKey(Agecategory, null=True, on_delete=models.CASCADE)
     minimumweightcategory = models.ForeignKey(
         Minimumweightcategory, null=True, on_delete=models.CASCADE
     )
@@ -617,18 +608,20 @@ class RecordStandard(models.Model):
     ep_j = models.IntegerField(default=0, verbose_name="Epaulé jeté")
     AGE_CATEGORIES = {
         "SENIOR": "SENIOR",
+        "U20": "U20",
         "U15": "U15",
         "U17": "U17",
-        "U20": "U20",
     }
     weightcategory = models.CharField(
-        max_length=5, verbose_name="Catégorie de poids de corps")
+        max_length=5, verbose_name="Catégorie de poids de corps"
+    )
     agecategory = models.CharField(
-        max_length=7, choices=AGE_CATEGORIES, verbose_name="Catégorie d'âge")
-    season = models.ForeignKey(
-        Season, on_delete=models.CASCADE, verbose_name="Saison")
+        max_length=7, choices=AGE_CATEGORIES, verbose_name="Catégorie d'âge"
+    )
+    season = models.ForeignKey(Season, on_delete=models.CASCADE, verbose_name="Saison")
     gender = models.ForeignKey(
-        Gender, on_delete=models.CASCADE, null=True, verbose_name="Genre")
+        Gender, on_delete=models.CASCADE, null=True, verbose_name="Genre"
+    )
 
     class Meta:
         db_table = "record_standard"
@@ -641,12 +634,35 @@ class RecordStandard(models.Model):
 
 
 class Record(models.Model):
-    event = models.ForeignKey(Event, on_delete=models.CASCADE, limit_choices_to={'competition__isrecordeligible': True})
-    arr = models.BooleanField(default=False, verbose_name="Arraché")
-    ep_j = models.BooleanField(default=False, verbose_name="Epaulé jeté")
-    total = models.BooleanField(default=False, verbose_name="Total")
-    is_current = models.BooleanField(
-        default=False, verbose_name="Record en cours")
+    AGE_CATEGORIES = {
+        "SENIOR": "SENIOR",
+        "U20": "U20",
+        "U15": "U15",
+        "U17": "U17",
+    }
+    ATTEMPT_KINDS = {"ARR": "ARR", "EP-J": "EP-J", "TOTAL": "TOTAL"}
+    event = models.ForeignKey(
+        Event,
+        on_delete=models.CASCADE,
+        limit_choices_to={"competition__isrecordeligible": True},
+        null=True,
+    )
+    kind = models.CharField(max_length=5, choices=ATTEMPT_KINDS, null=True, blank=True)
+    agecategory = models.CharField(
+        max_length=7,
+        choices=AGE_CATEGORIES,
+        null=True,
+        blank=True,
+        verbose_name="Catégorie d'âge",
+    )
+    weightcategory = models.CharField(
+        max_length=5, null=True, blank=True, verbose_name="Catégorie de poids de corps"
+    )
+    gender = models.ForeignKey(
+        Gender, on_delete=models.CASCADE, null=True, verbose_name="Genre"
+    )
+    value = models.IntegerField(default=0)
+    is_current = models.BooleanField(default=False, verbose_name="Record en cours")
 
     class Meta:
         db_table = "record"
