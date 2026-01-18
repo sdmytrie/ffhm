@@ -199,3 +199,131 @@ class Command(BaseCommand):
                     current_record.value = record.value
                     current_record.event = record.event
                     current_record.save()
+
+        for gender in genders:
+            for agecategory in agecategories:
+                if agecategory == "SENIOR":
+                    continue
+                weightcategories = Weightcategory.objects.filter(
+                    agecategory__name=agecategory,
+                    agecategory__gender__name=gender,
+                    agecategory__season=current_season,
+                ).order_by("weight")
+                for kind in kinds:
+                    ic(gender, agecategory, kind)
+                    for weightcategory in weightcategories:
+                        ic(weightcategory.weight)
+                        try:
+                            current_record = self.get_record(
+                                gender, agecategory, weightcategory, kind
+                            )
+                        except Record.DoesNotExist:
+                            current_record_standard = self.get_record_standard(
+                                gender, agecategory, weightcategory
+                            )
+                            new_record = Record()
+                            new_record.weightcategory = weightcategory.weight
+                            new_record.kind = kind
+                            new_record.agecategory = agecategory
+                            new_record.gender = Gender.objects.get(name=gender)
+                            if kind == "ARR":
+                                new_record.value = current_record_standard.arr
+                            if kind == "EP-J":
+                                new_record.value = current_record_standard.ep_j
+                            if kind == "TOTAL":
+                                new_record.value = (
+                                    current_record_standard.ep_j
+                                    + current_record_standard.arr
+                                )
+                            new_record.save()
+                            current_record = new_record
+
+                        attempts = (
+                            Attempt.objects.prefetch_related("event")
+                            .filter(
+                                event__competition__isrecordeligible=True,
+                                # event__weightcategory__weight=weightcategory.weight,
+                                event__agecategory__name=agecategories[
+                                    agecategories.index(agecategory) - 1
+                                ],
+                                name=kind,
+                                validate=1,
+                                event__competition__gender__name=gender,
+                                event__concurrent__country="FR",
+                            )
+                            .order_by("rank", "updated_at")
+                        )
+                        for attempt in attempts:
+                            manage_records = ManageRecords()
+                            new_event = manage_records.get_last_agecategory(
+                                attempt.event
+                            )
+                            if not new_event:
+                                continue
+                            if new_event.agecategory == attempt.event.agecategory:
+                                continue
+                            # if new_event.agecategory != agecategory:
+                            #     continue
+                            current_weight = attempt.event.weightcategory.weight
+                            # current_agecategory = attempt.event.agecategory.name
+                            if attempt.event.competition.season.pk != current_season.pk:
+                                buffer_event = record_manager.set_weightcategory(
+                                    attempt.event
+                                )
+                                current_weight = buffer_event.weightcategory.weight
+                                # if (
+                                #     current_weight != weightcategory.weight
+                                # ) or current_agecategory != agecategory:
+                                #     continue
+                            if current_weight != weightcategory.weight:
+                                continue
+                            if attempt.value > current_record.value or (
+                                attempt.value >= current_record.value
+                                and not current_record.event
+                            ):
+                                current_record.value = attempt.value
+                                # current_record.event = attempt.event
+                                current_record.event = new_event
+                                current_record.save()
+                        if kind == "TOTAL":
+                            attempts = (
+                                Attempt.objects.prefetch_related("event")
+                                .filter(
+                                    event__competition__isrecordeligible=True,
+                                    # event__weightcategory__weight=weightcategory.weight,
+                                    event__agecategory__name=agecategories[
+                                        agecategories.index(agecategory) - 1
+                                    ],
+                                    validate=1,
+                                    event__competition__gender__name=gender,
+                                    event__concurrent__country="FR",
+                                )
+                                .order_by("rank", "updated_at")
+                            )
+                            for attempt in attempts:
+                                manage_records = ManageRecords()
+                                new_event = manage_records.get_last_agecategory(
+                                    attempt.event
+                                )
+                                if not new_event:
+                                    continue
+                                if new_event.agecategory == attempt.event.agecategory:
+                                    continue
+                                current_weight = attempt.event.weightcategory.weight
+                                if (
+                                    attempt.event.competition.season.id
+                                    != current_season.id
+                                ):
+                                    buffer_event = record_manager.set_weightcategory(
+                                        attempt.event
+                                    )
+                                    current_weight = buffer_event.weightcategory.weight
+                                if current_weight != weightcategory.weight:
+                                    continue
+                                if attempt.event.total > current_record.value or (
+                                    attempt.event.total >= current_record.value
+                                    and not current_record.event
+                                ):
+                                    current_record.value = attempt.event.total
+                                    current_record.event = new_event
+                                    current_record.save()
