@@ -33,11 +33,11 @@
                 {{ event.concurrent.licence }}
             </td>
             <td>
-                {% if event.id == next_event.id and not event.has_ended and event.has_begun %}
+                {% if event.id == next_event.id and not event.has_ended %}
                     <span class="text-success blink">
                         <b>{{ event.concurrent.lastname.upper }}&nbsp;{{ event.concurrent.firstname.capitalize }}</b>
                     </span>
-                {% elif event.id == nextnext_event.id and not event.has_ended and event.has_begun %}
+                {% elif event.id == nextnext_event.id and not event.has_ended %}
                     <span class="text-primary">
                         <b>{{ event.concurrent.lastname.upper }}&nbsp;{{ event.concurrent.firstname.capitalize }}</b>
                     </span>
