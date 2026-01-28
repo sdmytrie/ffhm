@@ -44,6 +44,7 @@ def concurrent_get(request, licence, current_competition, gender_id):
                     "$or": [
                         {"concurrent.result.licence.type.code": "CA"},
                         {"concurrent.result.licence.type.code": "CJ"},
+                        {"concurrent.result.licence.type.code": "PH"},
                     ]
                 }
             },
@@ -75,6 +76,7 @@ def concurrent_get(request, licence, current_competition, gender_id):
                     "$or": [
                         {"concurrent.result.licence.type.code": "CA"},
                         {"concurrent.result.licence.type.code": "CJ"},
+                        {"concurrent.result.licence.type.code": "PH"},
                     ]
                 }
             },
