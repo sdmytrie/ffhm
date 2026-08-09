@@ -147,18 +147,18 @@ def sort_closed_event_list(competition):
 
     event_list = sorted(
         buffer_event_list,
-        # key=lambda e: (
-        #     e.agecategory_id,
-        #     e.weightcategory_id,
-        #     -e.total,
-        #     e.totalSet[1],
-        #     e.iwf,
-        # ),
         key=lambda e: (
             e.agecategory_id,
             e.weightcategory_id,
-            -e.iwf,
+            -e.total,
+            e.totalSet[1],
+            e.iwf,
         ),
+        # key=lambda e: (
+        #     e.agecategory_id,
+        #     e.weightcategory_id,
+        #     -e.iwf,
+        # ),
     )
 
     for event in event_list:
