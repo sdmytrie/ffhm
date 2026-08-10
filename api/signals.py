@@ -233,6 +233,6 @@ def save_user_profile(sender, instance, **kwargs):
     instance.profile.save()
 
 
-@receiver([post_save, post_delete], sender=Record)
-def invalidate_record_cache(sender, instance, **kwargs):
-    cache.delete_pattern("*record_list*")
+# @receiver([post_save, post_delete], sender=Record)
+# def invalidate_record_cache(sender, instance, **kwargs):
+#     cache.delete_pattern("*record_list*")
