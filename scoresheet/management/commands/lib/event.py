@@ -1,4 +1,5 @@
 from api.models import Attempt, Event, Season, Weightcategory
+from scoresheet.management.commands.lib.weightcategory import FfhmWeightcategory
 
 
 class FfhmEvent:
@@ -24,12 +25,18 @@ class FfhmEvent:
         self._season = value
 
     def get_attempts(self):
+        _ffhm_weightcategory = FfhmWeightcategory()
+        min, max = _ffhm_weightcategory.get_range(
+            self.gender, self.agecategory, self.weightcategory.weight
+        )
         _attempts = Attempt.objects.filter(
             name=self.kind,
             event__agecategory__name=self.agecategory,
-            event__weightcategory=self.weightcategory,
-            event__competition__gender__name=self.gender,
-            event__competition__season=self.season,
+            # event__weightcategory__weight=self.weightcategory.weight,
+            event__weight__gt=min,
+            event__weight__lte=max,
+            event__concurrent__gender__name=self.gender,
+            # event__competition__season=self.season,
             event__competition__isrecordeligible=True,
             event__concurrent__country="FR",
             validate=1,
@@ -38,13 +45,19 @@ class FfhmEvent:
         return _attempts
 
     def get_events(self):
-        _attempts = Event.objects.filter(
+        _ffhm_weightcategory = FfhmWeightcategory()
+        min, max = _ffhm_weightcategory.get_range(
+            self.gender, self.agecategory, self.weightcategory.weight
+        )
+        _events = Event.objects.filter(
             agecategory__name=self.agecategory,
-            weightcategory=self.weightcategory,
-            competition__gender__name=self.gender,
-            competition__season=self.season,
+            # weightcategory__weight=self.weightcategory.weight,
+            weight__gt=min,
+            weight__lte=max,
+            concurrent__gender__name=self.gender,
+            # competition__season=self.season,
             competition__isrecordeligible=True,
             concurrent__country="FR",
         ).order_by("-total", "updated_at")
 
-        return _attempts
+        return _events

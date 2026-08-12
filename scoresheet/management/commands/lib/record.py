@@ -47,6 +47,18 @@ class FfhmRecord:
                 kind=self.kind,
             )
             return _record
+        except Exception as error:
+            print(error)
+
+    def get_and_create_record(self):
+        try:
+            _record = Record.objects.get(
+                gender__name=self.gender,
+                agecategory=self.agecategory,
+                weightcategory=self.weight,
+                kind=self.kind,
+            )
+            return _record
         except Record.DoesNotExist:
             _record_standard = self.get_record_standard()
 
