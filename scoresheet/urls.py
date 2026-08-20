@@ -175,6 +175,16 @@ urlpatterns = [
     path("ranking/<season_id>", scoresheet.views.ranking.ranking, name="ranking"),
     path("record/", scoresheet.views.record.record, name="record"),
     path("record/<season_id>", scoresheet.views.record.record, name="record"),
+    path(
+        "record/delete/<id>",
+        scoresheet.views.record.record_delete,
+        name="record_delete",
+    ),
+    path(
+        "record/edit/<id>",
+        scoresheet.views.record.record_edit,
+        name="record_edit",
+    ),
     path("search/", scoresheet.views.search.search, name="search"),
     path("search/<season_id>", scoresheet.views.search.search, name="search"),
     path("search/<concurrent_id>/", scoresheet.views.search.search, name="search"),

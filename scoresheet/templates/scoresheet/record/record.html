@@ -55,6 +55,20 @@
                           <td>
                             {{ record.arr.value }}
                           </td>
+                          {% if request.user.is_superuser %}
+                            <td style="width:1%; font-size: -2; white-space: nowrap;">
+                              {% if record.arr.event %}
+                                <a href="{% url 'scoresheet:record_delete' record.arr.id %}">
+                                  <img src="{% static 'scoresheet/img/icon-deletelink.svg' %}">
+                                </a>
+                              {% else %}
+                                &nbsp;&nbsp;&nbsp;&nbsp;
+                              {% endif %}
+                              <a href="{% url 'scoresheet:record_edit' record.arr.id %}">
+                                <img src="{% static 'scoresheet/img/icon-changelink.svg' %}">
+                              </a>
+                            </td>
+                          {% endif %}
                         </tr>
                       </table>
                     </td>
@@ -73,6 +87,20 @@
                           <td>
                             {{ record.ep_j.value }}
                           </td>
+                          {% if request.user.is_superuser %}
+                            <td style="width:1%; font-size: -2; white-space: nowrap;">
+                              {% if record.ep_j.event %}
+                                <a href="{% url 'scoresheet:record_delete' record.ep_j.id %}">
+                                  <img src="{% static 'scoresheet/img/icon-deletelink.svg' %}">
+                                </a>
+                              {% else %}
+                                &nbsp;&nbsp;&nbsp;&nbsp;
+                              {% endif %}
+                              <a href="{% url 'scoresheet:record_edit' record.ep_j.id %}">
+                                <img src="{% static 'scoresheet/img/icon-changelink.svg' %}">
+                              </a>
+                            </td>
+                          {% endif %}
                         </tr>
                       </table>
                     </td>
@@ -91,6 +119,20 @@
                           <td>
                             {{ record.total.value }}
                           </td>
+                          {% if request.user.is_superuser %}
+                            <td style="width:1%; font-size: -2; white-space: nowrap;">
+                              {% if record.total.event %}
+                                <a href="{% url 'scoresheet:record_delete' record.total.id %}">
+                                  <img src="{% static 'scoresheet/img/icon-deletelink.svg' %}">
+                                </a>
+                              {% else %}
+                                &nbsp;&nbsp;&nbsp;&nbsp;
+                              {% endif %}
+                              <a href="{% url 'scoresheet:record_edit' record.total.id %}">
+                                <img src="{% static 'scoresheet/img/icon-changelink.svg' %}">
+                              </a>
+                            </td>
+                          {% endif %}
                         </tr>
                       </table>
                     </td>

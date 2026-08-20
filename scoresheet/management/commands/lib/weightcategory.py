@@ -21,6 +21,8 @@ class FfhmWeightcategory:
         _weightcategories.pop()
         _weightcategories = [int(x) for x in _weightcategories]
         _weightcategories.sort()
+        min = 0
+        max = 0
         for weightcatory in _weightcategories:
             if ">" in weight:
                 max = 1000

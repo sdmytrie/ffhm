@@ -1,0 +1,213 @@
+{% extends "scoresheet/base.html" %}
+{% load i18n static %}
+
+{% block title %}FFHM - Records de France - edition{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" type="text/css" href="{% static 'scoresheet/css/modules/season.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'scoresheet/css/modules/event.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'scoresheet/css/modules/competition.css' %}">
+{% endblock %}
+
+
+{% block content %}
+<div class="row">
+  <div class="col-md-12 competition-box">
+    <div class="main-menu">
+        <h3 class="main-menu__item">Modification du record de France</h3>
+        <table class="table table-condensed table-sm" 
+               style="font-size: 0.8rem; background-color: white; width: 35%; margin-left: 5rem;">
+          <thead>
+            <th style="width: 10%; white-space: nowrap">Genre</th>
+            <th style="width: 10%; white-space: nowrap">Catégorie d'âge</th>
+            <th style="width: 10%; white-space: nowrap">Catégorie de poids</th>
+            <th>{{ kind_title }}</th>
+          </thead>
+          <tbody>
+            <tr>
+              <td>{{ record.gender }}</td>
+              <td>{{ record.agecategory }}</td>
+              <td>{{ record.weightcategory }}</td>
+              <td>
+               <table style="width: 100%">
+                 <tr>
+                   <td style="width: 90%; border-top: 0">
+                     {% if not record.event %}
+                       standard
+                     {% else %}
+                       <a href="{% url 'scoresheet:search' record.event.concurrent.id %}">
+                           {{ record.event.concurrent.lastname.upper }}&nbsp;{{ record.event.concurrent.firstname.capitalize }}
+                       </a>
+                     {% endif %}
+                   </td>
+                   <td style="border-top: 0;">
+                     {{ record.value }}
+                   </td>
+                 </tr>
+               </table>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+    </div>
+    <div>
+      <h3>Liste des tirages</h3>
+      <h3>Référence</h3>
+      <table class="table table-condensed table-sm" 
+             style="font-size: 0.8rem; background-color: white; width: 35%; margin-left: 5rem;">
+        <thead>
+          <th>Genre</th>
+          <th>Catégories d'âge</th>
+          <th>Catégorie de poids</th>
+          <th>minimum</th>
+        </thead>
+        <tbody>
+          <td>{{ record_standard.gender }}</td>
+          <td>{{ all_agecategories }}</td>
+          <td>{{ record_standard.weightcategory }} (de {{ min_weight }} kg à {{ max_weight }} kg)</td>
+          <td>{{ kind_title }}&nbsp;&nbsp;&nbsp;&nbsp;{{ value_reference }}</td>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<table id="competitionSet" class="table table-condensed table-sm table-bordered table-hover event-datatable">
+  <thead class="thead-dark">
+      <tr>
+          <th>Licence</th>
+          <th>Nom</th>
+          <th class="event-datatable__col-md">AN</th>
+          <th class="event-datatable__col-md">Club</th>
+          <th class="event-datatable__col-md">NAT</th>
+          <th>P.C.</th>
+          {% if kind_title == "Arraché" %}
+            <th class="event-datatable__col-md" style="text-align: center;">1</th>
+            <th class="event-datatable__col-md" style="text-align: center;">2</th>
+            <th class="event-datatable__col-md" style="text-align: center;">3</th>
+            <th style="text-align: center;">ARR</th>
+          {% endif %}
+          {% if kind_title == "Ep/jeté" %}
+            <th class="event-datatable__col-md" style="text-align: center;">1</th>
+            <th class="event-datatable__col-md" style="text-align: center;">2</th>
+            <th class="event-datatable__col-md" style="text-align: center;">3</th>
+            <th style="text-align: center;">EPJ</th>
+          {% endif %}
+          {% if kind_title == "total" %}
+            <th style="text-align: center;">TOTAL</th>
+          {% endif %}
+          <th class="event-datatable__col-sm" style="text-align: center;">date</th>
+          <th class="event-datatable__col-sm" style="text-align: center;">Cat&eacute;gorie</th>
+          <th class="event-datatable__col-md" style="text-align: center;">IWF</th>
+      </tr>
+  </thead>
+  <tbody>
+    {% for event in events %}
+      <tr>
+        <td>
+          {{ event.concurrent.licence }}
+        </td>
+        <td>
+          {{ event.concurrent.lastname }} {{ event.concurrent.firstname }}
+        </td>
+        <td class="event-datatable__col-md">
+          {{ event.concurrent.date_of_birth|date:"Y" }}
+        </td>
+        <td class="event-datatable__col-md">
+            {{ event.clubName }}<br />
+            <font size="-3">{{ event.concurrent.clubReg }}</font>
+        </td>
+        <td class="event-datatable__col-md">
+            {{ event.concurrent.country }}
+        </td>
+        <td>
+            {{ event.weight }}
+        </td>
+        {% if kind_title == "Arraché" %}
+          {% for attempt in event.getARRAttemptSet %}
+              <td class="event-datatable__col-md" style="text-align: center;">
+                  <div class="attempt_{{ attempt.validate }}"
+                       {% if attempt.value == best_arr %} style="border:solid 2px black;" {% endif %}>
+                      <strong>{%if attempt.validate == 2%}-{%endif%}{{ attempt.value }}</strong>
+                  </div>
+              </td>
+          {% endfor %}
+          <td style="text-align: center;{% if event.totalSet.0 == best_total_arr %} background-color: yellow;{% endif %}">
+              <strong>{{ event.totalSet.0 }}</strong>
+          </td>
+        {% endif %}
+        {% if kind_title == "Ep/jeté" %}
+          {% for attempt in event.getEPJAttemptSet %}
+              <td class="event-datatable__col-md" style="text-align: center;">
+                  <div class="attempt_{{ attempt.validate }}"
+                       {% if attempt.value == best_epj %} style="border:solid 2px black;" {% endif %}>
+                      <strong>{%if attempt.validate == 2%}-{%endif%}{{ attempt.value }}</strong>
+                  </div>
+              </td>
+          {% endfor %}
+          <td style="text-align: center;{% if event.totalSet.1 == best_total_epj %} background-color: yellow;{% endif %}">
+              <strong>{{ event.totalSet.1 }}</strong>
+          </td>
+        {% endif %}
+        {% if kind_title == "total" %}
+          <td style="width: 50px; text-align:center;{% if event.total == best_total %} background-color: yellow;{% endif %}">
+              <strong>{{ event.total }}</strong>
+          </td>
+        {% endif %}
+        <td class="event-datatable__col-sm" style="text-align: right;">
+          {{ event.updated_at|date:"d-m-Y H:i" }}
+        </td>
+        <td class="event-datatable__col-sm" nowrap style="text-align: center;">
+            {% if event.competition.ismasters %}
+                {{ event.agecategory.name | slice:"3" }} {{ event.categorie }}&nbsp;{{ event.weightcategory.weight }}
+            {% else %}
+                {% if 'W' in event.agecategory.name or 'M' in event.agecategory.name %}
+                    {{ event.agecategory.name | slice:"3" }} {{ event.categorie }}&nbsp;{{ event.weightcategory.weight }}
+                {% else %}
+                    {{ event.agecategory.name | slice:"3" }} {{ event.categorie }}&nbsp;{{ event.weightcategory.weight }}
+                {% endif %}
+            {% endif %}
+        </td>
+        <td class="event-datatable__col-md" style="text-align: center;">
+            {{ event.iwf|floatformat:2 }}
+        </td>
+      </tr>
+    {% endfor %}
+  </tbody>
+{% endblock content %}
+{% block javascript %}
+  {{ block.super }}
+  <script>
+    current_table = $("#competitionSet").DataTable({
+      dom: 'Bplrti',
+      order: [[9, 'desc']],
+      ordering: true,
+      aLengthMenu: [[10, 20, 40, -1], [10, 20, 40, "All"]],
+      iDisplayLength: -1,
+      language: {
+          paginate: {
+              previous: "&lt;",
+              next: "&gt;"
+          }
+      }
+    })
+    thClone = $('#competitionSet thead tr').clone().appendTo('#competitionSet thead')
+    $('#competitionSet thead tr:eq(1) th').each(function(i) {
+        if(i != 6 && i != 7 && i != 8 && i != 10 && i != 11 && i != 12) {
+          $(this).html('<div class="input-group input-group-sm mb-1"><input id="col-input-' + i + '" type="text" class="form-control ps-1 pe-1" /></div>')
+
+          $('input', this).on('keyup change', function() {
+              if (current_tables.column(i).search() !== this.value) {
+                  current_tables[e]
+                      .column(i)
+                      .search(this.value, true, false)
+                      .draw()
+              }
+          })
+        } else {
+            $(this).html("")
+        }
+    })
+    thClone.find('th').attr('data-dt-order', 'disable')
+    thClone.find('th').attr('class', '')
+  </script>
+    
+{% endblock javascript %}

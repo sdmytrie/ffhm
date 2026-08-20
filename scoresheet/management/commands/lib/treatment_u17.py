@@ -52,7 +52,11 @@ class TreatmentU17(Treatment):
                                 record.event = _buffer_record.event
                                 record.save()
                         else:
-                            if _buffer_record.value > record.value:
+                            if (
+                                _buffer_record.value >= record.value
+                                and _buffer_record.event.updated_at
+                                < record.event.updated_at
+                            ):
                                 record.value = _buffer_record.value
                                 record.event = _buffer_record.event
                                 record.save()
