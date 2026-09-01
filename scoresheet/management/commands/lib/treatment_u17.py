@@ -21,7 +21,7 @@ class TreatmentU17(Treatment):
                     if (
                         record.weightcategory == "95" or record.weightcategory == ">95"
                     ) and gender.name == "male":
-                        _buffer_weightcategory = ">88"
+                        _buffer_weightcategory = ">86"
                     elif (
                         record.weightcategory == "77" or record.weightcategory == ">77"
                     ) and gender.name == "female":
