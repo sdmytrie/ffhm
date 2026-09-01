@@ -19,7 +19,7 @@ class TreatmentU17(Treatment):
                 for record in _all_records:
                     _buffer_weightcategory = record.weightcategory
                     if (
-                        record.weightcategory == "94" or record.weightcategory == ">94"
+                        record.weightcategory == "95" or record.weightcategory == ">95"
                     ) and gender.name == "male":
                         _buffer_weightcategory = ">88"
                     elif (
@@ -92,7 +92,7 @@ class TreatmentU17(Treatment):
                         event.weightcategory.weight == "110"
                         or event.weightcategory.weight == ">110"
                     ) and gender.name == "male":
-                        _ffhm_record.weight = ">94"
+                        _ffhm_record.weight = ">95"
                     else:
                         _ffhm_record.weight = event.weightcategory.weight
                     _current_record = _ffhm_record.get_record()
