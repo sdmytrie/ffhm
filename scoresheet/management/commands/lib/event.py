@@ -1,4 +1,6 @@
-from api.models import Attempt, Event, Season, Weightcategory
+from datetime import datetime
+
+from api.models import Attempt, Competition, Event, Season, Weightcategory
 from scoresheet.management.commands.lib.weightcategory import FfhmWeightcategory
 
 
@@ -15,6 +17,9 @@ class FfhmEvent:
         self.weightcategory = weightcategory
         self.kind = kind
         self._season = list(Season.objects.all().order_by("-id"))[0]
+        self._reference_date = datetime.strptime(
+            "2026-09-01 00:00:00", "%Y-%m-%d %H:%M:%S"
+        )
 
     @property
     def season(self):
@@ -38,6 +43,7 @@ class FfhmEvent:
             event__concurrent__gender__name=self.gender,
             # event__competition__season=self.season,
             event__competition__isrecordeligible=True,
+            event__competition__start_date__gt=self._reference_date,
             event__concurrent__country="FR",
             validate=1,
         ).order_by("-value", "updated_at")
@@ -57,6 +63,7 @@ class FfhmEvent:
             concurrent__gender__name=self.gender,
             # competition__season=self.season,
             competition__isrecordeligible=True,
+            competition__start_date__gt=self._reference_date,
             concurrent__country="FR",
         ).order_by("-total", "updated_at")
 

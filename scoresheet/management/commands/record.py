@@ -51,10 +51,11 @@ class Command(BaseCommand):
                         _event = FfhmEvent(gender, agecategory, weightcategory, kind)
                         if kind == "TOTAL":
                             _events = _event.get_events()
-                            if _events[0].total > _current_record.value:
-                                _current_record.event = _events[0]
-                                _current_record.value = _events[0].total
-                                _current_record.save()
+                            if len(_events) > 0:
+                                if _events[0].total > _current_record.value:
+                                    _current_record.event = _events[0]
+                                    _current_record.value = _events[0].total
+                                    _current_record.save()
                         else:
                             _attempts = _event.get_attempts()
                             # if (
@@ -64,14 +65,15 @@ class Command(BaseCommand):
                             # ):
                             #     for toto in _attempts:
                             #         ic(toto.__dict__)
-                            if (
-                                _attempts[0].value > _current_record.value
-                                and _attempts[0].name == kind
-                                and _attempts[0].validate == 1
-                            ):
-                                _current_record.event = _attempts[0].event
-                                _current_record.value = _attempts[0].value
-                                _current_record.save()
+                            if len(_attempts) > 0:
+                                if (
+                                    _attempts[0].value > _current_record.value
+                                    and _attempts[0].name == kind
+                                    and _attempts[0].validate == 1
+                                ):
+                                    _current_record.event = _attempts[0].event
+                                    _current_record.value = _attempts[0].value
+                                    _current_record.save()
         ic("Simple record - finished")
 
         ic("SENIOR Treatment - start")
