@@ -142,14 +142,22 @@ def sort_closed_event_list(competition):
     buffer_concurrent = dict()
 
     buffer_event_list = Event.objects.filter(competition_id=competition.id).order_by(
-        "agecategory_id", "weightcategory_id", "-total"
+        "agecategory__name", "weightcategory__weight", "-total"
     )
+
+    def calculate_weight_order(event):
+        if ">" in event.weightcategory.weight:
+            print(event.weightcategory.weight)
+            return 400
+        else:
+            return int(event.weightcategory.weight)
 
     event_list = sorted(
         buffer_event_list,
         key=lambda e: (
-            e.agecategory_id,
-            e.weightcategory_id,
+            -e.agecategory.pk,
+            calculate_weight_order(e),
+            # e.weightcategory.weight,
             -e.total,
             e.totalSet[1],
             e.iwf,
@@ -198,6 +206,7 @@ def sort_closed_event_list(competition):
             ][event.concurrent] = event
             buffer_concurrent[event.weightcategory][event.concurrent] = event.total
 
+    ic(event_dict)
     return event_dict
 
 

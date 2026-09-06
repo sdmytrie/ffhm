@@ -103,7 +103,8 @@
         $('table[id*="mycompetitionSet"]').each(function(e, table){
             current_tables[e] = $('#' + table.id).DataTable({
                 dom: 'Bplrti',
-                order: [[16, 'desc'],[14, 'desc'],[17, 'desc']],
+                // order: [[16, 'desc'],[14, 'desc'],[17, 'desc']],
+                order: [],
                 ordering: true,
                 aLengthMenu: [[10, 20, 40, -1], [10, 20, 40, "All"]],
                 iDisplayLength: -1,
