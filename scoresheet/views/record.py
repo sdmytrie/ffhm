@@ -64,7 +64,14 @@ def record_edit(request, id):
         _all_valid_agecategories = _all_agecategories[
             _all_agecategories.index(record.agecategory) - 1 :
         ]
-    _events = []
+    # _events = Event.objects.filter(
+    #     competition__isrecordeligible=True,
+    #     competition__gender=record.gender,
+    #     weight__lte=_max_weight,
+    #     weight__gt=_min_weight,
+    #     concurrent__country="FR",
+    # )
+
     if record.kind != "TOTAL":
         _attempts = Attempt.objects.filter(
             event__weight__gt=_min_weight,
@@ -88,26 +95,31 @@ def record_edit(request, id):
             event__total__gte=_value[record.kind],
         ).order_by("-value", "updated_at")
 
+    _events = set()
+    _events_pk = set()
     for attempt in _attempts:
-        _exists = any(event.pk == attempt.event.pk for event in _events)
-        if not _exists:
-            _agecategory = Agecategory.objects.get(
-                name=record.agecategory,
-                season=record.event.competition.season,
-                gender=record.event.concurrent.gender,
-            )
-            current_season = list(
-                Season.objects.all().order_by("start_date").reverse()
-            )[0]
-            _age = (
-                current_season.start_date.year
-                - attempt.event.concurrent.date_of_birth.year
-            ) + 1
-            if _age >= _agecategory.agemin and _age <= _agecategory.agemax:
-                if attempt.event.agecategory.name != record.agecategory:
-                    if attempt.updated_at.year == current_season.end_date.year:
-                        continue
-                _events.append(attempt.event)
+        _events_pk.add(attempt.event.pk)
+    _events = [Event.objects.get(pk=x) for x in _events_pk]
+    # for attempt in _attempts:
+    #     _exists = any(event.pk == attempt.event.pk for event in _events)
+    #     if not _exists:
+    #         _agecategory = Agecategory.objects.get(
+    #             name=record.agecategory,
+    #             season=record.event.competition.season,
+    #             gender=record.event.concurrent.gender,
+    #         )
+    #         current_season = list(
+    #             Season.objects.all().order_by("start_date").reverse()
+    #         )[0]
+    #         _age = (
+    #             current_season.start_date.year
+    #             - attempt.event.concurrent.date_of_birth.year
+    #         ) + 1
+    #         if _age >= _agecategory.agemin and _age <= _agecategory.agemax:
+    #             if attempt.event.agecategory.name != record.agecategory:
+    #                 if attempt.updated_at.year == current_season.end_date.year:
+    #                     continue
+    #             _events.append(attempt.event)
 
     content = {
         "record": record,
@@ -121,6 +133,27 @@ def record_edit(request, id):
     }
 
     return render(request, "scoresheet/record/edit.html", content)
+
+
+@user_passes_test(lambda u: u.is_superuser)
+def record_save(request, id, event_id):
+    _event = Event.objects.get(pk=event_id)
+    _record = Record.objects.get(pk=id)
+    _value = 0
+    if _record.kind == "TOTAL":
+        _value = _event.total
+    else:
+        for attempt in _event.attempt_set.all():
+            if attempt.name != _record.kind:
+                continue
+            if attempt.validate != 1:
+                continue
+            if attempt.value >= _value:
+                _value = attempt.value
+    _record.event = _event
+    _record.value = _value
+    _record.save()
+    return redirect("scoresheet:record")
 
 
 # @cache_page(60 * 60 * 24, key_prefix="record_list")

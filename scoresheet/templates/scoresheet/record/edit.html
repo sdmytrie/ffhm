@@ -103,7 +103,7 @@
     {% for event in events %}
       <tr>
         <td>
-          {{ event.concurrent.licence }}
+          <a href="{% url 'scoresheet:record_save' record.pk event.pk %}">{{ event.concurrent.licence }}</a>
         </td>
         <td>
           {{ event.concurrent.lastname }} {{ event.concurrent.firstname }}
@@ -195,8 +195,8 @@
           $(this).html('<div class="input-group input-group-sm mb-1"><input id="col-input-' + i + '" type="text" class="form-control ps-1 pe-1" /></div>')
 
           $('input', this).on('keyup change', function() {
-              if (current_tables.column(i).search() !== this.value) {
-                  current_tables[e]
+              if (current_table.column(i).search() !== this.value) {
+                  current_table
                       .column(i)
                       .search(this.value, true, false)
                       .draw()

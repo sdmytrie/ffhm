@@ -185,6 +185,11 @@ urlpatterns = [
         scoresheet.views.record.record_edit,
         name="record_edit",
     ),
+    path(
+        "record/save/<id>/<event_id>",
+        scoresheet.views.record.record_save,
+        name="record_save",
+    ),
     path("search/", scoresheet.views.search.search, name="search"),
     path("search/<season_id>", scoresheet.views.search.search, name="search"),
     path("search/<concurrent_id>/", scoresheet.views.search.search, name="search"),
