@@ -146,6 +146,8 @@ def sort_closed_event_list(competition):
     )
 
     def calculate_weight_order(event):
+        if not event.weightcategory:
+            return 0
         if ">" in event.weightcategory.weight:
             print(event.weightcategory.weight)
             return 400
