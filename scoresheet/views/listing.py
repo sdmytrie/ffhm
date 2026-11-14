@@ -35,8 +35,7 @@ def listing(request, season_id="0"):
     title = "Listing"
     page = "listing"
 
-    current_season = list(
-        Season.objects.all().order_by("start_date").reverse())[0]
+    current_season = list(Season.objects.all().order_by("start_date").reverse())[0]
     if season_id == "0":
         season = current_season
     else:
@@ -64,17 +63,35 @@ def listing(request, season_id="0"):
         "FRANCE",
         "REGION",
     ]
+    if season == current_season:
+        series = [
+            "N.C",
+            "DEB",
+            "DPT",
+            "PRO",
+            "LIG",
+            "FED",
+            "HON",
+            "NAT",
+            "INT B",
+            "INT A",
+            "EUR",
+            "MON",
+            "OLY",
+            "MONDE",
+            "EUROPE",
+            "FRANCE",
+            "REGION",
+        ]
     ages = ["U10", "U13", "U15", "U17", "U20", "SENIOR", "Masters"]
 
     if request.POST.get("startDate"):
-        start_date = datetime.strptime(
-            request.POST["startDate"], "%d/%m/%Y").date()
+        start_date = datetime.strptime(request.POST["startDate"], "%d/%m/%Y").date()
     else:
         start_date = season.start_date
 
     if request.POST.get("endDate"):
-        end_date = datetime.strptime(
-            request.POST["endDate"], "%d/%m/%Y").date()
+        end_date = datetime.strptime(request.POST["endDate"], "%d/%m/%Y").date()
     else:
         end_date = season.end_date
 
@@ -129,8 +146,7 @@ def listing_view(request):
 
     title = "Listing"
     page = "listing"
-    current_season = list(
-        Season.objects.all().order_by("start_date").reverse())[0]
+    current_season = list(Season.objects.all().order_by("start_date").reverse())[0]
 
     buffer_event_set = OrderedDict()
     event_set = OrderedDict()
@@ -183,6 +199,14 @@ def listing_view(request):
     serie_null = False
     if "N.C" in my_serie_list:
         serie_null = True
+    if "REG" in my_serie_list:
+        my_serie_list.append("PRO")
+    if "PRO" in my_serie_list:
+        my_serie_list.append("REG")
+    if "IRG" in my_serie_list:
+        my_serie_list.append("LIG")
+    if "LIG" in my_serie_list:
+        my_serie_list.append("IRG")
     serie_list = Minimumweightcategory.objects.filter(name__in=my_serie_list)
 
     clubs = "all"
@@ -208,8 +232,7 @@ def listing_view(request):
 
     if is_master:
         age_list = Agecategory.objects.filter(name="SENIOR")
-        query = Q(competition_id__in=request.POST.get(
-            "competitionSet").split(","))
+        query = Q(competition_id__in=request.POST.get("competitionSet").split(","))
         # query.add(Q(competition__season_id=current_season.id), Q.AND)
         query.add(Q(concurrent__gender_id__in=gender_list), Q.AND)
         query.add(Q(agecategory_id__in=age_list), Q.AND)
@@ -288,8 +311,7 @@ def listing_view(request):
     age_list = list()
     if is_senior:
         age_list = Agecategory.objects.filter(name__in=master_list)
-        query = Q(competition_id__in=request.POST.get(
-            "competitionSet").split(","))
+        query = Q(competition_id__in=request.POST.get("competitionSet").split(","))
         # query.add(Q(competition__season_id=current_season.id), Q.AND)
         query.add(Q(concurrent__gender_id__in=gender_list), Q.AND)
         query.add(Q(agecategory_id__in=age_list), Q.AND)
@@ -336,9 +358,7 @@ def listing_view(request):
 
     event_list = sorted(
         buffer_event_set,
-        key=lambda e: (e.agecategory_id,
-                       e.weightcategory_id,
-                       -e.total, e.totalSet[1]),
+        key=lambda e: (e.agecategory_id, e.weightcategory_id, -e.total, e.totalSet[1]),
     )
 
     for event in event_list:
@@ -578,8 +598,7 @@ def listingXls(request, id_competition):
                             + event.weightcategory.weight
                         )
                     else:
-                        row.append(
-                            event.agecategory.name[:3] + " " + categorie + " ")
+                        row.append(event.agecategory.name[:3] + " " + categorie + " ")
 
             row.append(event.iwf)
 
@@ -594,8 +613,7 @@ def listing_leader(request, season_id="0"):
     title = "Officiels"
     page = "listing_leader"
 
-    current_season = list(
-        Season.objects.all().order_by("start_date").reverse())[0]
+    current_season = list(Season.objects.all().order_by("start_date").reverse())[0]
     if season_id == "0":
         season = current_season
     else:

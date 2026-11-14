@@ -196,18 +196,16 @@
 					    	</a>
 					    </li>
 					{% endif %}
-					{% if request.user.is_superuser or request.user.is_staff %}
-					    <li class="nav-item">
-					    	<a href="{% url 'scoresheet:record' %}"
-					    	   {% if page == 'record' %}
-					    	   		class="nav-link mynavbar-main__item"
-					    	   {% else %}
-					    			class="nav-link"
-					    	   {% endif %}>
-					    	   Records de France (en construction)
-					    	</a>
-					    </li>
-					{% endif %}
+          <li class="nav-item">
+            <a href="{% url 'scoresheet:record' %}"
+               {% if page == 'record' %}
+               class="nav-link mynavbar-main__item"
+               {% else %}
+               class="nav-link"
+               {% endif %}>
+              Records de France
+            </a>
+          </li>
 					<li class="nav-item">
 						<a href="{% url 'scoresheet:search' %}"
 						   class="nav-link">
