@@ -73,6 +73,7 @@ class TreatmentU17(Treatment):
                 competition__isrecordeligible=True,
                 concurrent__country="FR",
                 agecategory=_current_agecategory,
+                weightcategory__isnull=False,
             )
             for event in _events:
                 _age = (

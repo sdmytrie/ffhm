@@ -1,6 +1,7 @@
 from icecream import ic
 
 from api.models import Agecategory, Event, Record
+from scoresheet.management.commands.lib import weightcategory
 from scoresheet.management.commands.lib.agecategory import FfhmAgecategory
 from scoresheet.management.commands.lib.record import FfhmRecord
 from scoresheet.management.commands.lib.treatment import Treatment
@@ -74,6 +75,7 @@ class TreatmentU20(Treatment):
                 competition__isrecordeligible=True,
                 concurrent__country="FR",
                 agecategory=_current_agecategory,
+                weightcategory__isnull=False,
             )
             for event in _events:
                 _age = (
