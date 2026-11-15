@@ -69,7 +69,29 @@
                 {% if agecategory.gender.id == gender.id %}
                     <table class="table table-condensed table-sm table-bordered table-hover minimumweightcategory-datatable">
                         <thead>
-                        {% if season.id < 9 %}
+                        {% if season.id >= 10 %}
+                          {% if master == "0" %}
+                              <tr>
+                                  <th style="background: #0000ff; color: #ffffff; ">{{ agecategory.name }}</th>
+                                  <th style="background: #79aec8;">DEB</th>
+                                  <th style="background: #79aec8;">DPT</th>
+                                  <th style="background: #79aec8;">PRO</th>
+                                  <th style="background: #79aec8;">LIG</th>
+                                  <th style="background: #79aec8;">HON</th>
+                                  <th style="background: #79aec8;">NAT</th>
+                                  <th style="background: #79aec8;">EUR</th>
+                                  <th style="background: #79aec8;">MON</th>
+                              </tr>
+                          {% else %}
+                              <tr>
+                                  <th style="background: #79aec8;">{{ agecategory.name }}</th>
+                                  <th style="background: #79aec8;">MONDE</th>
+                                  <th style="background: #79aec8;">EUROPE</th>
+                                  <th style="background: #79aec8;">FRANCE</th>
+                                  <th style="background: #79aec8;">REGION</th>
+                              </tr>
+                          {% endif %}
+                        {% elif season.id < 9 %}
                           {% if master == "0" %}
                               <tr>
                                   <th style="background: #0000ff; color: #ffffff; ">{{ agecategory.name }}</th>
